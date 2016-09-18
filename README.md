@@ -1,2 +1,99 @@
 # react-native-hunterslog-media-picker
-Media Picker component for react native, only used in Hunterslog Project
+React Native Media Picker component, only used in Hunterslog Project. Do not copy or modify in any circumstances.
+
+## Table of contents
+- [Install](#install)
+  - [iOS](#ios)
+  - [Android](#android)
+- [Usage](#usage)
+- [Direct launch](#directly-launching-the-camera-or-image-library)
+- [Options](#options)
+- [Response object](#the-response-object)
+
+## Install
+
+`npm install react-native-hunterslog-media-picker --save`
+
+Use [rnpm](https://github.com/rnpm/rnpm) to automatically complete the installation:  
+`rnpm link react-native-hunterslog-media-picker`
+
+or link manually like so:
+
+### iOS
+
+
+### Android
+```gradle
+// file: android/settings.gradle
+...
+
+include ':react-native-hunterslog-media-picker'
+project(':react-native-hunterslog-media-picker').projectDir = new File(settingsDir, '../node_modules/react-native-hunterslog-media-picker')
+```
+```gradle
+// file: android/app/build.gradle
+...
+
+dependencies {
+    ...
+    compile project(':react-native-hunterslog-media-picker')
+}
+```
+```xml
+<!-- file: android/app/src/main/AndroidManifest.xml -->
+<manifest ...>
+
+	...
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <application...>
+    	...
+        <activity android:name=".MediaPickerActivity"/>
+        ...
+    </application>
+    ...
+```
+```java
+// file: android/app/src/main/java/com/<...>/MainApplication.java
+...
+
+import com.falco.mediapicker.MediaHunterslogPickerPackage; // <-- add this import
+
+public class MainApplication extends Application implements ReactApplication {
+    @Override
+    protected List<ReactPackage> getPackages() {
+        return Arrays.<ReactPackage>asList(
+            new MainReactPackage(),
+            new MediaHunterslogPickerPackage() // <-- add this line
+        );
+    }
+...
+}
+
+```
+## Usage
+
+```javascript
+var Platform = require('react-native').Platform;
+var MediaPicker = require('react-native-hunterslog-media-picker');
+
+/**
+ * The method will launch native module
+ * @params {Int} max_photo Max number of photo can be uploaded
+ * @params {Int} max_video Max number of video can be uploaded
+ * @params {Int} max_video_duration Maximun seconds a video can be captured
+ */
+MediaPicker.showMediaPicker(max_photo, max_video, max_video_duration (response) => {
+// Data is an Array of selected media
+  con
+  sole.log('Response = ', response);
+
+  ...
+
+});
+```
+The format of media file will be 'file:///storage..." for Android, put it in Image tag:
+```javascript
+<Image source={this.state.avatarSource} style={styles.uploadAvatar} />
+```
