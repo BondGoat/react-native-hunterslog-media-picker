@@ -1,0 +1,29 @@
+{
+  "name": "react-native-hunterslog-media-picker",
+  "version": "1.0.0",
+  "description": "React Native Media Picker component used only for HuntersLog Project. Any modifying is illegal.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BondGoat/react-native-hunterslog-media-picker.git"
+  },
+  "keywords": [
+    "react-native-component",
+    "react-component",
+    "react-native",
+    "photo",
+    "video",
+    "picker",
+    "photo picker",
+    "video picker"
+  ],
+  "author": "Bond G. Nguyen",
+  "license": "TMA-FALCO",
+  "bugs": {
+    "url": "https://github.com/BondGoat/react-native-hunterslog-media-picker/issues"
+  },
+  "peerDependencies": {
+    "react-native": ">=0.20.0"
+  },
+  "homepage": "https://github.com/BondGoat/react-native-hunterslog-media-picker/blob/master/README.md",
+}
