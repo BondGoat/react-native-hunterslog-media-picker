@@ -35,7 +35,7 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
                 if (data != null && data.hasExtra(MEDIA_RESULT)) {
                     String jsonArr = data.getStringExtra(MEDIA_RESULT);
 
-                    mCallback(jsonArr);
+                    mCallback.invoke(jsonArr);
                 }
 
                 break;
@@ -61,8 +61,8 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
         }
     }
 
-   @Override
-   public void onNewIntent(Intent intent) {
-
-   }
+//    @Override
+//    public void onNewIntent(Intent intent) {
+//
+//    }
 }
