@@ -135,10 +135,7 @@ public class MediaPickerActivity extends Activity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent();
-
-                setResult(MEDIA_RESULT_CODE, intent);
-                finish();
+                new PrepairSendingData().execute();
             }
         });
     }
