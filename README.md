@@ -92,10 +92,10 @@ MediaPicker.showMediaPicker(max_photo, max_video, max_video_duration, selectedMe
 });
 ```
 ```Response Model
-[{"Location":{"Lat":"10.254","Lng":"101.5458"},"Url":"file:///storage/...","ThumbUrl":"base64String"},{"Location":{"Lat":"10.254","Lng":"101.5458"},"Url":"file:///storage/...","ThumbUrl":"base64String"},...]
+[{'Location':{'Lat':10.254,'Lng':101.5458},'Url':'file:///storage/...','ThumbUrl':'base64String'},{'Location':{'Lat':10.254,'Lng':101.5458},'Url':'file:///storage/...','ThumbUrl':'base64String'},...]
 ```
 
-The format of media file will be 'file:///storage..." for Android, put it in Image tag:
+The format of media file will be 'file:///storage...' for Android, put it in Image tag:
 ```javascript
 <Image source={this.state.avatarSource} style={styles.uploadAvatar} />
 ```
