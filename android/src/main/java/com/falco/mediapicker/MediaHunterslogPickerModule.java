@@ -52,7 +52,7 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
         mCallback = callback;
         Activity currentActivity = getCurrentActivity();
         if (currentActivity != null) {
-            Intent intent = new Intent();
+            Intent intent = new Intent(getReactApplicationContext(), MediaPickerActivity.class);
             intent.putExtra(MAX_UPLOADABLE_PHOTO, max_photo);
             intent.putExtra(MAX_UPLOADABLE_VIDEO, max_video);
             intent.putExtra(MAX_UPLOADABLE_VIDEO_DURATION, max_video_duration);
