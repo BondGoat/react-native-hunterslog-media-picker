@@ -21,6 +21,7 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
     public final String MAX_UPLOADABLE_VIDEO = "MAX_UPLOADABLE_VIDEO";
     public final String MAX_UPLOADABLE_VIDEO_DURATION = "MAX_UPLOADABLE_VIDEO_DURATION";
     public final static int MEDIA_RESULT_CODE = 0;
+    public final static String MEDIA_RESULT = "MEDIA_RESULT";
     // --------------------------
 
     public MediaHunterslogPickerModule(ReactApplicationContext reactContext) {
@@ -29,7 +30,16 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case MEDIA_RESULT_CODE:
+                if (data != null && data.hasExtra(MEDIA_RESULT)) {
+                    String jsonArr = data.getStringExtra(MEDIA_RESULT);
 
+                    mCallback(jsonArr);
+                }
+
+                break;
+        }
     }
 
     @Override

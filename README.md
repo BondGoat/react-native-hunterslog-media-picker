@@ -6,9 +6,6 @@ React Native Media Picker component, only used in Hunterslog Project. Do not cop
   - [iOS](#ios)
   - [Android](#android)
 - [Usage](#usage)
-- [Direct launch](#directly-launching-the-camera-or-image-library)
-- [Options](#options)
-- [Response object](#the-response-object)
 
 ## Install
 
@@ -49,7 +46,7 @@ dependencies {
 
     <application...>
     	...
-        <activity android:name=".MediaPickerActivity"/>
+        <activity android:name=".MediaPickerActivity" android:screenOrientation="portrait"/>
         ...
     </application>
     ...
@@ -84,15 +81,18 @@ var MediaPicker = require('react-native-hunterslog-media-picker');
  * @params {Int} max_video Max number of video can be uploaded
  * @params {Int} max_video_duration Maximun seconds a video can be captured
  */
-MediaPicker.showMediaPicker(max_photo, max_video, max_video_duration (response) => {
+MediaPicker.showMediaPicker(max_photo, max_video, max_video_duration, (response) => {
 // Data is an Array of selected media
-  con
-  sole.log('Response = ', response);
+  console.log('Response = ', response);
 
   ...
 
 });
 ```
+```Response Model
+{[]}
+```
+
 The format of media file will be 'file:///storage..." for Android, put it in Image tag:
 ```javascript
 <Image source={this.state.avatarSource} style={styles.uploadAvatar} />
