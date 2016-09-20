@@ -4,4 +4,11 @@
 
     <string name="txt_media_picker_header">CHOOSE PHOTOS OR VIDEO</string>
     <string name="txt_add">ADD</string>
+    <string name="txt_warning">You can only post content with Photo or Video.</string>
+    <string name="txt_select_capture_mode">NEXT ACTION:</string>
+    <string name="txt_photo_mode">Take a Photo</string>
+    <string name="txt_video_mode">Capture a Video</string>
+    <string name="txt_use">USE</string>
+    <string name="txt_loading">Loading...</string>
+    us
 </resources>

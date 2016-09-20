@@ -6,4 +6,5 @@
 
     <color name="bg_hunterslog">#e87600</color>
     <color name="bg_hunterslog_selected">#ff9600</color>
+    <color name="bg_hunterslog_footer">#424532</color>
 </resources>
