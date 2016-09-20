@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -22,7 +21,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.util.ArrayMap;
-import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,15 +39,11 @@ import com.google.gson.Gson;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +107,14 @@ public class MediaPickerActivity extends Activity {
                 max_video = receivedIntent.getIntExtra(MAX_UPLOADABLE_VIDEO, 1);
             if (receivedIntent.hasExtra(MAX_UPLOADABLE_VIDEO_DURATION))
                 max_video_duration = receivedIntent.getIntExtra(MAX_UPLOADABLE_VIDEO_DURATION, 10);
+            if (receivedIntent.hasExtra(MEDIA_RESULT)) {
+                MediaItem[] mediaList = (MediaItem[]) receivedIntent.getSerializableExtra(MEDIA_RESULT);
+                if (mediaList != null && mediaList.length > 0) {
+                    for (MediaItem item : mediaList) {
+                        mSelectedMediaList.add(item);
+                    }
+                }
+            }
         }
 
         picassoInstance = new Picasso.Builder(getApplicationContext())
@@ -241,7 +243,7 @@ public class MediaPickerActivity extends Activity {
     private View.OnClickListener btnCaptureListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            // showActionDialog();
+            showActionDialog();
         }
     };
 
@@ -427,7 +429,19 @@ public class MediaPickerActivity extends Activity {
         cursor.close();
     }
 
-    public String getStringImage(Bitmap bmp) {
+    private void checkSelectedItems() {
+
+        for (MediaItem item : mSelectedMediaList) {
+            if (item != null) {
+                int index = mMediaList.indexOf(item);
+                if (index > 0) {
+                    mapCheckPosition.put(index, true);
+                }
+            }
+        }
+    }
+
+    private String getStringImage(Bitmap bmp) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] imageBytes = baos.toByteArray();
@@ -587,7 +601,7 @@ public class MediaPickerActivity extends Activity {
             getAllShownImagesPath(MediaPickerActivity.this);
             getAllShownVideosPath(MediaPickerActivity.this);
 
-
+            checkSelectedItems();
 
             return null;
         }

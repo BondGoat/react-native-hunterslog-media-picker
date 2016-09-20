@@ -9,6 +9,7 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.google.gson.Gson;
 
 /**
  * Created by Bond Nguyen on 9/18/16.
@@ -52,14 +53,20 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
-    public void showMediaPicker(int max_photo, int max_video, int max_video_duration, Callback callback) {
+    public void showMediaPicker(int max_photo, int max_video, int max_video_duration, Object selectedList, Callback callback) {
         mCallback = callback;
         Activity currentActivity = getCurrentActivity();
         if (currentActivity != null) {
+
             Intent intent = new Intent(getReactApplicationContext(), MediaPickerActivity.class);
             intent.putExtra(MAX_UPLOADABLE_PHOTO, max_photo);
             intent.putExtra(MAX_UPLOADABLE_VIDEO, max_video);
             intent.putExtra(MAX_UPLOADABLE_VIDEO_DURATION, max_video_duration);
+
+            Gson gson = new Gson();
+            MediaItem[] mediaList = gson.fromJson(selectedList.toString(), MediaItem[].class);
+
+            intent.putExtra(MEDIA_RESULT, mediaList);
 
             currentActivity.startActivityForResult(intent, MEDIA_RESULT_CODE);
         }
