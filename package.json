@@ -23,7 +23,7 @@
     "url": "https://github.com/BondGoat/react-native-hunterslog-media-picker/issues"
   },
   "peerDependencies": {
-    "react-native": ">=0.20.0"
+    "react-native": ">=0.30.0"
   },
-  "homepage": "https://github.com/BondGoat/react-native-hunterslog-media-picker/blob/master/README.md",
+  "homepage": "https://github.com/BondGoat/react-native-hunterslog-media-picker/blob/master/README.md"
 }
