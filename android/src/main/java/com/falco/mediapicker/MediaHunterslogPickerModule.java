@@ -2,6 +2,7 @@ package com.falco.mediapicker;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Callback;
@@ -26,6 +27,7 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
 
     public MediaHunterslogPickerModule(ReactApplicationContext reactContext) {
         super(reactContext);
+        reactContext.addActivityEventListener(this);
     }
 
     @Override
@@ -33,7 +35,9 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
         switch (requestCode) {
             case MEDIA_RESULT_CODE:
                 if (data != null && data.hasExtra(MEDIA_RESULT)) {
+
                     String jsonArr = data.getStringExtra(MEDIA_RESULT);
+                    Log.e("MEDIA", jsonArr);
 
                     mCallback.invoke(jsonArr);
                 }
