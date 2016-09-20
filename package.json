@@ -1,6 +1,6 @@
 {
   "name": "react-native-hunterslog-media-picker",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "React Native Media Picker component used only for HuntersLog Project. Any modifying is illegal.",
   "main": "index",
   "repository": {
