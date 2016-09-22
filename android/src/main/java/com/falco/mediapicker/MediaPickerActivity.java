@@ -393,7 +393,7 @@ public class MediaPickerActivity extends Activity {
     public void getAllShownVideosPath(Activity activity) {
         Uri uri;
         Cursor cursor;
-        int column_index_data, column_data;
+        int column_index_data;
         String absolutePathOfImage, lat, lng;
         uri = android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 
@@ -405,7 +405,6 @@ public class MediaPickerActivity extends Activity {
 
         assert cursor != null;
         column_index_data = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
-        column_data = cursor.getColumnIndexOrThrow(MediaStore.Video.Thumbnails.DATA);
         while (cursor.moveToNext()) {
             absolutePathOfImage= cursor.getString(column_index_data);
 
@@ -445,8 +444,7 @@ public class MediaPickerActivity extends Activity {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] imageBytes = baos.toByteArray();
-        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        return encodedImage;
+        return Base64.encodeToString(imageBytes, Base64.DEFAULT);
     }
 
     private File createImageFile() throws IOException {
@@ -472,7 +470,7 @@ public class MediaPickerActivity extends Activity {
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             // Create the File where the photo should go
-            File photoFile = null;
+            File photoFile;
             try {
                 photoFile = createImageFile();
 
@@ -636,16 +634,13 @@ public class MediaPickerActivity extends Activity {
                 if (item.Url.toLowerCase().contains("mp4")) {
                     Bitmap thumbBit = ThumbnailUtils.createVideoThumbnail(item.Url, MediaStore.Video.Thumbnails.MICRO_KIND);
 
-                    String base64Image = getStringImage(thumbBit);
-
-                    item.ThumbUrl = base64Image;
+                    item.ThumbUrl = getStringImage(thumbBit);
                 }
             }
 
             Gson gson = new Gson();
-            String jsonArr = gson.toJson(mSelectedMediaList);
 
-            return jsonArr;
+            return gson.toJson(mSelectedMediaList);
         }
 
         @Override

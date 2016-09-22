@@ -25,7 +25,7 @@ or link manually like so:
 ...
 
 include ':react-native-hunterslog-media-picker'
-project(':react-native-hunterslog-media-picker').projectDir = new File(settingsDir, '../node_modules/react-native-hunterslog-media-picker')
+project(':react-native-hunterslog-media-picker').projectDir = new File(settingsDir, '../node_modules/react-native-hunterslog-media-picker/android')
 ```
 ```gradle
 // file: android/app/build.gradle
