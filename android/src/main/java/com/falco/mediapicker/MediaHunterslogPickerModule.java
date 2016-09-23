@@ -12,6 +12,8 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.google.gson.Gson;
 
+import org.json.JSONException;
+
 /**
  * Created by Bond Nguyen on 9/18/16.
  */
@@ -64,8 +66,14 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
             intent.putExtra(MAX_UPLOADABLE_VIDEO, max_video);
             intent.putExtra(MAX_UPLOADABLE_VIDEO_DURATION, max_video_duration);
 
+
             Gson gson = new Gson();
-            MediaItem[] mediaList = gson.fromJson(selectedList.toString(), MediaItem[].class);
+            MediaItem[] mediaList = new MediaItem[0];
+            try {
+                mediaList = gson.fromJson(String.valueOf(Utils.convertArrayToJson(selectedList)), MediaItem[].class);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
             intent.putExtra(MEDIA_RESULT, mediaList);
 
