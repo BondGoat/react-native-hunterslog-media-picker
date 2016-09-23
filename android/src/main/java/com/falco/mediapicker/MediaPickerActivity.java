@@ -108,7 +108,7 @@ public class MediaPickerActivity extends Activity {
             if (receivedIntent.hasExtra(MAX_UPLOADABLE_VIDEO_DURATION))
                 max_video_duration = receivedIntent.getIntExtra(MAX_UPLOADABLE_VIDEO_DURATION, 10);
             if (receivedIntent.hasExtra(MEDIA_RESULT)) {
-                MediaItem[] mediaList = (MediaItem[]) receivedIntent.getSerializableExtra(MEDIA_RESULT);
+                MediaItem[] mediaList = (MediaItem[]) receivedIntent.getParcelableArrayExtra(MEDIA_RESULT);
                 if (mediaList != null && mediaList.length > 0) {
                     for (MediaItem item : mediaList) {
                         mSelectedMediaList.add(item);
