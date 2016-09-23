@@ -9,7 +9,7 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableArray;
 import com.google.gson.Gson;
 
 /**
@@ -54,7 +54,7 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
-    public void showMediaPicker(int max_photo, int max_video, int max_video_duration, ReadableMap selectedList, Callback callback) {
+    public void showMediaPicker(int max_photo, int max_video, int max_video_duration, ReadableArray selectedList, Callback callback) {
         mCallback = callback;
         Activity currentActivity = getCurrentActivity();
         if (currentActivity != null) {
