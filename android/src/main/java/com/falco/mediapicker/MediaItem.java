@@ -1,7 +1,7 @@
 package com.falco.mediapicker;
 
 /**
- * Created by Admin on 9/18/16.
+ * Created by Bond Nguyen on 9/18/16.
  */
 //{
 //        "location":{"lat":10.21545,"lng":101.24548},
@@ -11,9 +11,12 @@ package com.falco.mediapicker;
 //        },
 
 public class MediaItem {
+    public int Id;
+    public String RealUrl;
     public String Url;
     public String ThumbUrl;
     public LocationItem Location;
+    public Boolean IsChecked = false;
 }
 
 class LocationItem {

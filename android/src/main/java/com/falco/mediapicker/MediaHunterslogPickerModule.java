@@ -9,10 +9,6 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ReadableArray;
-import com.google.gson.Gson;
-
-import org.json.JSONException;
 
 /**
  * Created by Bond Nguyen on 9/18/16.
@@ -41,7 +37,6 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
                 if (data != null && data.hasExtra(MEDIA_RESULT)) {
 
                     String jsonArr = data.getStringExtra(MEDIA_RESULT);
-                    Log.e("MEDIA", jsonArr);
 
                     mCallback.invoke(jsonArr);
                 }
@@ -56,7 +51,7 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
-    public void showMediaPicker(int max_photo, int max_video, int max_video_duration, ReadableArray selectedList, Callback callback) {
+    public void showMediaPicker(int max_photo, int max_video, int max_video_duration, String selectedList, Callback callback) {
         mCallback = callback;
         Activity currentActivity = getCurrentActivity();
         if (currentActivity != null) {
@@ -67,15 +62,7 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
             intent.putExtra(MAX_UPLOADABLE_VIDEO_DURATION, max_video_duration);
 
 
-            Gson gson = new Gson();
-            MediaItem[] mediaList = new MediaItem[0];
-            try {
-                mediaList = gson.fromJson(String.valueOf(Utils.convertArrayToJson(selectedList)), MediaItem[].class);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            intent.putExtra(MEDIA_RESULT, mediaList);
+            intent.putExtra(MEDIA_RESULT, selectedList);
 
             currentActivity.startActivityForResult(intent, MEDIA_RESULT_CODE);
         }
