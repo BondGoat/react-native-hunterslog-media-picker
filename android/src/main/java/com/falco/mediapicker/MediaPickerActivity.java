@@ -109,7 +109,7 @@ public class MediaPickerActivity extends Activity {
             if (receivedIntent.hasExtra(MAX_UPLOADABLE_VIDEO_DURATION))
                 max_video_duration = receivedIntent.getIntExtra(MAX_UPLOADABLE_VIDEO_DURATION, 10);
             if (receivedIntent.hasExtra(MEDIA_RESULT)) {
-                String jsonArr = "[{\"Id\":34,\"Location\":{},\"RealUrl\":\"file:///storage/9016-4EF8/DCIM/100ANDRO/DSC_0144.JPG\",\"ThumbUrl\":\"file:///data/user/0/com.tma.huntermediapicker/cache/MI_25092016_1506.jpg\",\"Url\":\"file:///data/user/0/com.tma.huntermediapicker/cache/MI_25092016_1506.jpg\"}]"; /*receivedIntent.getStringExtra(MEDIA_RESULT);*/
+                String jsonArr = receivedIntent.getStringExtra(MEDIA_RESULT);
 
                 Gson gson = new Gson();
                 MediaItem[] mediaList = gson.fromJson(jsonArr, MediaItem[].class);
