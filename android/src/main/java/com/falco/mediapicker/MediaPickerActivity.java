@@ -701,13 +701,12 @@ public class MediaPickerActivity extends Activity {
 
                 } else {
 
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inSampleSize = 4;
-                    Bitmap scaledBitmap = BitmapFactory.decodeFile(item.RealUrl.replace("file://", ""), options);
+                  Bitmap originBitmap = BitmapFactory.decodeFile(item.RealUrl.replace("file://", ""));
+                  Bitmap scaledBitmap = Bitmap.createScaledBitmap(originBitmap, (int) (originBitmap.getWidth() * 0.2), (int) (originBitmap.getHeight() * 0.2), true);
 
-                    String url = saveImage(scaledBitmap, item.RealUrl);
-                    item.Url = url;
-                    item.ThumbUrl = url;
+                  String url = saveImage(scaledBitmap, item.RealUrl);
+                  item.Url = url;
+                  item.ThumbUrl = url;
                 }
             }
 
