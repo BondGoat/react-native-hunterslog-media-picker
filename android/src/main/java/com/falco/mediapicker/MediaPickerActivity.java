@@ -60,7 +60,7 @@ public class MediaPickerActivity extends Activity {
     GridView gridMedia;
     Button btnBack, btnAdd;
     ImageAdapter imageAdapter;
-    int max_photo = 10, max_video = 1, max_video_duration = 10;
+    int max_photo = 10, max_video = 1, max_video_duration = 30;
     int selected_photo = 0, selected_video = 0;
     Dialog mDialog;
     List<MediaItem> mSelectedMediaList = new ArrayList<>();
@@ -579,7 +579,7 @@ public class MediaPickerActivity extends Activity {
      */
     private String saveImage(Bitmap bitmap, String url) {
         if (bitmap != null) {
-            File pictureFile = getOutputMediaFile(url);
+            File pictureFile = getOutputMediaFile(url, "jpg");
             if (pictureFile == null) {
                 Log.e(TAG, "Error creating media file, check storage permissions: ");// e.getMessage());
                 return "";
@@ -601,7 +601,7 @@ public class MediaPickerActivity extends Activity {
     }
 
     /** Create a File for saving an image or video */
-    private  File getOutputMediaFile(String filePath){
+    private  File getOutputMediaFile(String filePath, String ext){
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
         File mediaStorageDir = this.getCacheDir();
@@ -618,7 +618,7 @@ public class MediaPickerActivity extends Activity {
         // Create a media file name
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
         File mediaFile;
-        String mImageName="MI_" + timeStamp + filePath.hashCode() + ".jpg";
+        String mImageName="MI_" + timeStamp + filePath.hashCode() + "." + ext;
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
         return mediaFile;
     }
@@ -683,9 +683,22 @@ public class MediaPickerActivity extends Activity {
         protected String doInBackground(Void... voids) {
             for (MediaItem item : mSelectedMediaList) {
                 if (item.RealUrl.toLowerCase().contains("mp4")) {
-                    Bitmap thumbBit = ThumbnailUtils.createVideoThumbnail(item.Url, MediaStore.Video.Thumbnails.MICRO_KIND);
+                    Bitmap thumbBit = ThumbnailUtils.createVideoThumbnail(item.Url.replace("file://", ""), MediaStore.Video.Thumbnails.MICRO_KIND);
 
-                    item.ThumbUrl = getStringImage(thumbBit);
+                    item.ThumbUrl = saveImage(thumbBit, "thumb_" + item.Url);
+
+                    File trimmedVideo = getOutputMediaFile(item.Url, "mp4");
+                    try {
+                        long duration = Utils.getVideoDuration(getApplicationContext(), new File(item.Url.replace("file://", "")));
+                        if (duration > max_video_duration) {
+                            Utils.startTrim(new File(item.Url.replace("file://", "")), trimmedVideo, 0, max_video_duration * 1000);
+
+                            item.Url = "file://" + trimmedVideo.getAbsolutePath();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                 } else {
 
                     BitmapFactory.Options options = new BitmapFactory.Options();
@@ -711,13 +724,13 @@ public class MediaPickerActivity extends Activity {
 
             Log.e(TAG, s);
 
-           if (s != null) {
-               Intent data = new Intent();
-               data.putExtra(MEDIA_RESULT, s);
+            if (s != null) {
+                Intent data = new Intent();
+                data.putExtra(MEDIA_RESULT, s);
 
-               setResult(MEDIA_RESULT_CODE, data);
-               finish();
-           }
+                setResult(MEDIA_RESULT_CODE, data);
+                finish();
+            }
         }
     }
 
