@@ -109,13 +109,14 @@ public class MediaPickerActivity extends Activity {
             if (receivedIntent.hasExtra(MAX_UPLOADABLE_VIDEO_DURATION))
                 max_video_duration = receivedIntent.getIntExtra(MAX_UPLOADABLE_VIDEO_DURATION, 10);
             if (receivedIntent.hasExtra(MEDIA_RESULT)) {
-                String jsonArr = receivedIntent.getStringExtra(MEDIA_RESULT);
+                String jsonArr =  receivedIntent.getStringExtra(MEDIA_RESULT);
 
                 Gson gson = new Gson();
                 MediaItem[] mediaList = gson.fromJson(jsonArr, MediaItem[].class);
 
                 if (mediaList != null && mediaList.length > 0) {
                     for (MediaItem item : mediaList) {
+                        Log.e(TAG, "" + item.Id);
                         mSelectedMediaList.add(item);
                     }
                 }
@@ -425,6 +426,8 @@ public class MediaPickerActivity extends Activity {
                 }
             }
         }
+
+        Log.e(TAG, "" + mMediaList.get(0).IsChecked);
     }
 
     private String getStringImage(Bitmap bmp) {
@@ -563,9 +566,9 @@ public class MediaPickerActivity extends Activity {
      * @param bitmap
      * @return
      */
-    private String saveImage(Bitmap bitmap) {
+    private String saveImage(Bitmap bitmap, String url) {
         if (bitmap != null) {
-            File pictureFile = getOutputMediaFile();
+            File pictureFile = getOutputMediaFile(url);
             if (pictureFile == null) {
                 Log.e(TAG, "Error creating media file, check storage permissions: ");// e.getMessage());
                 return "";
@@ -587,7 +590,7 @@ public class MediaPickerActivity extends Activity {
     }
 
     /** Create a File for saving an image or video */
-    private  File getOutputMediaFile(){
+    private  File getOutputMediaFile(String filePath){
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
         File mediaStorageDir = this.getCacheDir();
@@ -604,7 +607,7 @@ public class MediaPickerActivity extends Activity {
         // Create a media file name
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
         File mediaFile;
-        String mImageName="MI_"+ timeStamp +".jpg";
+        String mImageName="MI_" + timeStamp + filePath.hashCode() + ".jpg";
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
         return mediaFile;
     }
@@ -678,7 +681,7 @@ public class MediaPickerActivity extends Activity {
                     options.inSampleSize = 4;
                     Bitmap scaledBitmap = BitmapFactory.decodeFile(item.RealUrl.replace("file://", ""), options);
 
-                    String url = saveImage(scaledBitmap);
+                    String url = saveImage(scaledBitmap, item.RealUrl);
                     item.Url = url;
                     item.ThumbUrl = url;
                 }
