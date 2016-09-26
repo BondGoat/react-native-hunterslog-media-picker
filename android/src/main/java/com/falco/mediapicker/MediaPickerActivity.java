@@ -564,21 +564,23 @@ public class MediaPickerActivity extends Activity {
      * @return
      */
     private String saveImage(Bitmap bitmap) {
-        File pictureFile = getOutputMediaFile();
-        if (pictureFile == null) {
-            Log.e(TAG, "Error creating media file, check storage permissions: ");// e.getMessage());
-            return "";
-        }
-        try {
-            FileOutputStream fos = new FileOutputStream(pictureFile);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            fos.close();
+        if (bitmap != null) {
+            File pictureFile = getOutputMediaFile();
+            if (pictureFile == null) {
+                Log.e(TAG, "Error creating media file, check storage permissions: ");// e.getMessage());
+                return "";
+            }
+            try {
+                FileOutputStream fos = new FileOutputStream(pictureFile);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                fos.close();
 
-            return "file://" + pictureFile.getAbsolutePath();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+                return "file://" + pictureFile.getAbsolutePath();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         return "";
@@ -666,7 +668,7 @@ public class MediaPickerActivity extends Activity {
         @Override
         protected String doInBackground(Void... voids) {
             for (MediaItem item : mSelectedMediaList) {
-                if (item.Url.toLowerCase().contains("mp4")) {
+                if (item.RealUrl.toLowerCase().contains("mp4")) {
                     Bitmap thumbBit = ThumbnailUtils.createVideoThumbnail(item.Url, MediaStore.Video.Thumbnails.MICRO_KIND);
 
                     item.ThumbUrl = getStringImage(thumbBit);
@@ -674,7 +676,7 @@ public class MediaPickerActivity extends Activity {
 
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inSampleSize = 4;
-                    Bitmap scaledBitmap = BitmapFactory.decodeFile(item.Url.replace("file://", ""), options);
+                    Bitmap scaledBitmap = BitmapFactory.decodeFile(item.RealUrl.replace("file://", ""), options);
 
                     String url = saveImage(scaledBitmap);
                     item.Url = url;
