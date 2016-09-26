@@ -209,6 +209,7 @@ public class MediaPickerActivity extends Activity {
                         selected_photo--;
                     }
                     item.IsChecked = false;
+                    mSelectedMediaList.remove(position);
                 } else {
                     if (item.Url.toLowerCase().contains("mp4") && selected_video < max_video) {
 
