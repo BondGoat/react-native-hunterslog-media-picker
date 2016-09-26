@@ -711,13 +711,13 @@ public class MediaPickerActivity extends Activity {
 
             Log.e(TAG, s);
 
-//            if (s != null) {
-//                Intent data = new Intent();
-//                data.putExtra(MEDIA_RESULT, s);
-//
-//                setResult(MEDIA_RESULT_CODE, data);
-//                finish();
-//            }
+           if (s != null) {
+               Intent data = new Intent();
+               data.putExtra(MEDIA_RESULT, s);
+
+               setResult(MEDIA_RESULT_CODE, data);
+               finish();
+           }
         }
     }
 
