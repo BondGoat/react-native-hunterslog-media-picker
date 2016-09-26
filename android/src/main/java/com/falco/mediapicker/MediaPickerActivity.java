@@ -118,6 +118,11 @@ public class MediaPickerActivity extends Activity {
                     for (MediaItem item : mediaList) {
                         Log.e(TAG, "" + item.Id);
                         mSelectedMediaList.add(item);
+
+                        if (item.RealUrl.toLowerCase().contains("mp4"))
+                            selected_video++;
+                        else
+                            selected_photo++;
                     }
                 }
             }
