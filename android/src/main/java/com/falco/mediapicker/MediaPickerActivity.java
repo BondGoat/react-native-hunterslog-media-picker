@@ -148,7 +148,12 @@ public class MediaPickerActivity extends Activity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new PrepairSendingData().execute();
+                if (mSelectedMediaList.size() > 0)
+                    new PrepairSendingData().execute();
+                else {
+                    String message = getString(R.string.txt_limit_add);
+                    showWarningDialog(message.replace("#P", "" + max_photo).replace("#V", "" + max_video));
+                }
             }
         });
     }
@@ -214,13 +219,13 @@ public class MediaPickerActivity extends Activity {
                         selected_photo--;
                     }
                     item.IsChecked = false;
-                    mSelectedMediaList.remove(position);
+                    mSelectedMediaList.remove(item);
                 } else {
                     if (item.Url.toLowerCase().contains("mp4") && selected_video < max_video) {
 
                         // Case user already select photo then they select video
                         if (selected_photo > 0) {
-                            showWarningDialog();
+                            showWarningDialog(getString(R.string.txt_warning));
                             return;
                         }
 
@@ -236,7 +241,7 @@ public class MediaPickerActivity extends Activity {
 
                         // Case user already select video then they select photo
                         if (selected_video > 0) {
-                            showWarningDialog();
+                            showWarningDialog(getString(R.string.txt_warning));
                             return;
                         }
 
@@ -532,13 +537,13 @@ public class MediaPickerActivity extends Activity {
         mDialog.show();
     }
 
-    private void showWarningDialog() {
+    private void showWarningDialog(String message) {
         mDialog = new Dialog(MediaPickerActivity.this);
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setContentView(R.layout.layout_dialog_warning);
 
         TextView tvWarningText = (TextView) mDialog.findViewById(R.id.tvWarningText);
-        tvWarningText.setText(R.string.txt_warning);
+        tvWarningText.setText(message);
 
         Button btnOk = (Button) mDialog.findViewById(R.id.btnOk);
         btnOk.setOnClickListener(new View.OnClickListener() {
@@ -706,13 +711,13 @@ public class MediaPickerActivity extends Activity {
 
             Log.e(TAG, s);
 
-            if (s != null) {
-                Intent data = new Intent();
-                data.putExtra(MEDIA_RESULT, s);
-
-                setResult(MEDIA_RESULT_CODE, data);
-                finish();
-            }
+//            if (s != null) {
+//                Intent data = new Intent();
+//                data.putExtra(MEDIA_RESULT, s);
+//
+//                setResult(MEDIA_RESULT_CODE, data);
+//                finish();
+//            }
         }
     }
 
