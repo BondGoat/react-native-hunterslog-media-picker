@@ -10,5 +10,5 @@
     <string name="txt_video_mode">Capture a Video</string>
     <string name="txt_use">USE</string>
     <string name="txt_loading">Loading...</string>
-    us
+    <string name="txt_limit_add">Please select at least #P Photos or #V Video</string>
 </resources>
