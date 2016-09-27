@@ -705,8 +705,8 @@ public class MediaPickerActivity extends Activity {
                     }
 
                     String url = Utils.saveImage(getApplicationContext(), scaledBitmap, item.RealUrl);
-                    item.Url = url;
-                    item.ThumbUrl = url;
+                    item.Url = "file://" + url;
+                    item.ThumbUrl = "file://" + url;
                 }
             }
 
