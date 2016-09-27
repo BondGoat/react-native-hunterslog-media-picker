@@ -7,20 +7,19 @@
     <RelativeLayout
         android:id="@+id/layoutHeader"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:gravity="center_vertical"
         android:layout_alignParentTop="true"
         android:background="@color/bg_hunterslog"
         android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="15dp"
-        android:paddingBottom="15dp">
+        android:paddingRight="10dp">
 
         <Button
             android:id="@+id/btnBack"
             android:layout_width="15dp"
             android:layout_height="30dp"
             android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
             android:background="@drawable/ico_back_selector"/>
 
         <TextView
@@ -42,7 +41,7 @@
             android:textSize="18sp"
             android:textColor="@android:color/white"
             android:textStyle="bold"
-            android:background="@drawable/btn_add_selector"/>
+            android:background="@android:color/transparent"/>
 
     </RelativeLayout>
 
