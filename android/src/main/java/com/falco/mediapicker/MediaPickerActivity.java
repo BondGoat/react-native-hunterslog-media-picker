@@ -657,7 +657,7 @@ public class MediaPickerActivity extends Activity {
                 if (item.RealUrl.toLowerCase().contains("mp4")) {
                     Bitmap thumbBit = ThumbnailUtils.createVideoThumbnail(item.Url.replace("file://", ""), MediaStore.Video.Thumbnails.MICRO_KIND);
 
-                    item.ThumbUrl = Utils.saveImage(getApplicationContext(), thumbBit, "thumb_" + item.Url);
+                    item.ThumbUrl = "file://" + Utils.saveImage(getApplicationContext(), thumbBit, "thumb_" + item.Url);
 
                     File trimmedVideo = Utils.getOutputMediaFile(getApplicationContext(), item.Url, "mp4");
                     try {
