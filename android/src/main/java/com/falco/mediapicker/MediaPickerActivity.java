@@ -673,14 +673,6 @@ public class MediaPickerActivity extends Activity {
 
                 } else {
 
-                    Bitmap originBitmap = BitmapFactory.decodeFile(item.RealUrl.replace("file://", ""));
-                    int scaleW = originBitmap.getWidth();
-                    int scaleH = originBitmap.getHeight();
-                    if (originBitmap.getWidth() > MAX_SCALED_SIZE) {
-                        scaleH = (MAX_SCALED_SIZE * originBitmap.getHeight()) / originBitmap.getWidth();
-                        scaleW = MAX_SCALED_SIZE;
-                    }
-
                     Bitmap scaledBitmap = null;
                     try {
                         ExifInterface exif = new ExifInterface(item.RealUrl.replace("file://", ""));
@@ -697,10 +689,19 @@ public class MediaPickerActivity extends Activity {
                             matrix.postRotate(270);
                         }
 
+                        Bitmap originBitmap = BitmapFactory.decodeFile(item.RealUrl.replace("file://", ""));
                         Bitmap matrixBitmap = Bitmap.createBitmap(originBitmap, 0, 0, originBitmap.getWidth(), originBitmap.getHeight(), matrix, true);
+                        int scaleW = matrixBitmap.getWidth();
+                        int scaleH = matrixBitmap.getHeight();
+                        if (matrixBitmap.getWidth() > MAX_SCALED_SIZE) {
+                            scaleW = MAX_SCALED_SIZE;
+                            scaleH = (MAX_SCALED_SIZE * matrixBitmap.getHeight()) / matrixBitmap.getWidth();
+                        }
+
                         scaledBitmap = Bitmap.createScaledBitmap(matrixBitmap, scaleW, scaleH, true);
 
                         matrixBitmap.recycle();
+                        originBitmap.recycle();
                     }
                     catch (Exception e) {
                         e.printStackTrace();
@@ -710,7 +711,7 @@ public class MediaPickerActivity extends Activity {
                     item.Url = "file://" + url;
                     item.ThumbUrl = "file://" + url;
 
-                    originBitmap.recycle();
+
                     scaledBitmap.recycle();
                 }
             }
