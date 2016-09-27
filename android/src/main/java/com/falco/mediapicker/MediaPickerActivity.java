@@ -11,6 +11,8 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -22,6 +24,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,8 +44,6 @@ import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ public class MediaPickerActivity extends Activity {
     List<MediaItem> mSelectedMediaList = new ArrayList<>();
     List<MediaItem> mMediaList = new ArrayList<>();
     String mCurrentPhotoPath;
+    int deviceW, deviceH, imageW, deviceWPx, deviceHPx;
 
     // Permission list request code
     public final static int READ_EXTERNAL_STORAGE = 0;
@@ -78,6 +80,7 @@ public class MediaPickerActivity extends Activity {
     public final String MAX_UPLOADABLE_VIDEO_DURATION = "MAX_UPLOADABLE_VIDEO_DURATION";
     public final static int MEDIA_RESULT_CODE = 0;
     public final static String MEDIA_RESULT = "MEDIA_RESULT";
+    public final static int MAX_SCALED_SIZE = 700;
     // --------------------------
 
     // Camera intent
@@ -128,6 +131,13 @@ public class MediaPickerActivity extends Activity {
             }
         }
 
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+        deviceWPx = displaymetrics.widthPixels;
+        deviceHPx = displaymetrics.heightPixels;
+        deviceH = (int) Utils.convertPixelsToDp(displaymetrics.heightPixels, getApplicationContext());
+        deviceW = (int) Utils.convertPixelsToDp(displaymetrics.widthPixels, getApplicationContext());
+
         picassoInstance = new Picasso.Builder(getApplicationContext())
                 .memoryCache(new LruCache(2 * 1024 * 1024))
                 .addRequestHandler(new VideoRequestHandler())
@@ -135,6 +145,8 @@ public class MediaPickerActivity extends Activity {
 
         gridMedia = (GridView) findViewById(R.id.gridMedia);
         gridMedia.setOnItemClickListener(mediaItemClickListener);
+
+        imageW = deviceW / 3;
 
         btnBack = (Button) findViewById(R.id.btnBack);
         btnBack.setOnClickListener(new View.OnClickListener() {
@@ -151,8 +163,7 @@ public class MediaPickerActivity extends Activity {
                 if (mSelectedMediaList.size() > 0)
                     new PrepairSendingData().execute();
                 else {
-                    String message = getString(R.string.txt_limit_add);
-                    showWarningDialog(message.replace("#P", "" + max_photo).replace("#V", "" + max_video));
+                    showWarningDialog(getString(R.string.txt_limit_add));
                 }
             }
         });
@@ -261,6 +272,10 @@ public class MediaPickerActivity extends Activity {
                         item.IsChecked = true;
 
                     } else {
+                        if (item.Url.toLowerCase().contains("mp4"))
+                            showWarningDialog(getString(R.string.txt_warning_video).replace("#V", "" + max_video));
+                        else
+                            showWarningDialog(getString(R.string.txt_warning_photo).replace("#P", "" + max_photo));
                         return;
                     }
                 }
@@ -582,57 +597,6 @@ public class MediaPickerActivity extends Activity {
     }
 
     /**
-     * save bitmap to internal storage
-     * @param bitmap
-     * @return
-     */
-    private String saveImage(Bitmap bitmap, String url) {
-        if (bitmap != null) {
-            File pictureFile = getOutputMediaFile(url, "jpg");
-            if (pictureFile == null) {
-                Log.e(TAG, "Error creating media file, check storage permissions: ");// e.getMessage());
-                return "";
-            }
-            try {
-                FileOutputStream fos = new FileOutputStream(pictureFile);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                fos.close();
-
-                return "file://" + pictureFile.getAbsolutePath();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return "";
-    }
-
-    /** Create a File for saving an image or video */
-    private  File getOutputMediaFile(String filePath, String ext){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-        File mediaStorageDir = this.getCacheDir();
-
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                return null;
-            }
-        }
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
-        File mediaFile;
-        String mImageName="MI_" + timeStamp + filePath.hashCode() + "." + ext;
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
-        return mediaFile;
-    }
-
-    /**
      * Async Task Class - used to get all media paths in background
      */
     class GetMediaFiles extends AsyncTask<Void, Void, Void> {
@@ -694,9 +658,9 @@ public class MediaPickerActivity extends Activity {
                 if (item.RealUrl.toLowerCase().contains("mp4")) {
                     Bitmap thumbBit = ThumbnailUtils.createVideoThumbnail(item.Url.replace("file://", ""), MediaStore.Video.Thumbnails.MICRO_KIND);
 
-                    item.ThumbUrl = saveImage(thumbBit, "thumb_" + item.Url);
+                    item.ThumbUrl = Utils.saveImage(getApplicationContext(), thumbBit, "thumb_" + item.Url);
 
-                    File trimmedVideo = getOutputMediaFile(item.Url, "mp4");
+                    File trimmedVideo = Utils.getOutputMediaFile(getApplicationContext(), item.Url, "mp4");
                     try {
                         long duration = Utils.getVideoDuration(getApplicationContext(), new File(item.Url.replace("file://", "")));
                         if (duration > max_video_duration) {
@@ -710,12 +674,39 @@ public class MediaPickerActivity extends Activity {
 
                 } else {
 
-                  Bitmap originBitmap = BitmapFactory.decodeFile(item.RealUrl.replace("file://", ""));
-                  Bitmap scaledBitmap = Bitmap.createScaledBitmap(originBitmap, (int) (originBitmap.getWidth() * 0.2), (int) (originBitmap.getHeight() * 0.2), true);
+                    Bitmap originBitmap = BitmapFactory.decodeFile(item.RealUrl.replace("file://", ""));
+                    int scaleW = originBitmap.getWidth();
+                    int scaleH = originBitmap.getHeight();
+                    if (originBitmap.getWidth() > MAX_SCALED_SIZE) {
+                        scaleH = (MAX_SCALED_SIZE * originBitmap.getHeight()) / originBitmap.getWidth();
+                        scaleW = MAX_SCALED_SIZE;
+                    }
 
-                  String url = saveImage(scaledBitmap, item.RealUrl);
-                  item.Url = url;
-                  item.ThumbUrl = url;
+                    Bitmap scaledBitmap = null;
+                    try {
+                        ExifInterface exif = new ExifInterface(item.RealUrl.replace("file://", ""));
+                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+                        Log.d("EXIF", "Exif: " + orientation);
+                        Matrix matrix = new Matrix();
+                        if (orientation == 6) {
+                            matrix.postRotate(90);
+                        }
+                        else if (orientation == 3) {
+                            matrix.postRotate(180);
+                        }
+                        else if (orientation == 8) {
+                            matrix.postRotate(270);
+                        }
+
+                        scaledBitmap = Bitmap.createBitmap(originBitmap, 0, 0, scaleW, scaleH, matrix, true);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    String url = Utils.saveImage(getApplicationContext(), scaledBitmap, item.RealUrl);
+                    item.Url = url;
+                    item.ThumbUrl = url;
                 }
             }
 
@@ -766,6 +757,8 @@ public class MediaPickerActivity extends Activity {
             if (position == 0) {
                 convertView = li.inflate(R.layout.layout_btn_capture, null);
 
+//                convertView.setLayoutParams(new RelativeLayout.LayoutParams(deviceWPx / 3, deviceWPx / 3));
+
                 Button btnCapture = (Button) convertView.findViewById(R.id.btnCapture);
                 btnCapture.setOnClickListener(btnCaptureListener);
 
@@ -779,6 +772,8 @@ public class MediaPickerActivity extends Activity {
                         isPhoto = false;
 
                     convertView = li.inflate(R.layout.layout_photo, null);
+
+//                    convertView.setLayoutParams(new RelativeLayout.LayoutParams(deviceWPx / 3, deviceWPx / 3));
 
                     ImageView imgView = (ImageView) convertView.findViewById(R.id.imgView);
                     ImageView imgSelected = (ImageView) convertView.findViewById(R.id.ic_selected);

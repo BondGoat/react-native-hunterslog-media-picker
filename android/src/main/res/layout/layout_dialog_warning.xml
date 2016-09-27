@@ -5,15 +5,17 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="300dp">
+        android:layout_height="200dp">
 
         <TextView
             android:id="@+id/tvWarningText"
+            android:layout_above="@+id/btnOk"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@android:color/white"
             android:gravity="center"
             android:textSize="20sp"
+            android:padding="20dp"
             android:textColor="@android:color/black"/>
 
         <Button
@@ -25,7 +27,7 @@
             android:textColor="@android:color/white"
             android:textStyle="bold"
             android:textSize="20sp"
-            android:padding="20dp"
+            android:padding="15dp"
             android:background="@drawable/btn_add_selector"/>
 
     </RelativeLayout>
