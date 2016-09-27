@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -698,7 +697,10 @@ public class MediaPickerActivity extends Activity {
                             matrix.postRotate(270);
                         }
 
-                        scaledBitmap = Bitmap.createBitmap(originBitmap, 0, 0, scaleW, scaleH, matrix, true);
+                        Bitmap matrixBitmap = Bitmap.createBitmap(originBitmap, 0, 0, originBitmap.getWidth(), originBitmap.getHeight(), matrix, true);
+                        scaledBitmap = Bitmap.createScaledBitmap(matrixBitmap, scaleW, scaleH, true);
+
+                        matrixBitmap.recycle();
                     }
                     catch (Exception e) {
                         e.printStackTrace();
@@ -707,6 +709,9 @@ public class MediaPickerActivity extends Activity {
                     String url = Utils.saveImage(getApplicationContext(), scaledBitmap, item.RealUrl);
                     item.Url = "file://" + url;
                     item.ThumbUrl = "file://" + url;
+
+                    originBitmap.recycle();
+                    scaledBitmap.recycle();
                 }
             }
 
@@ -757,8 +762,6 @@ public class MediaPickerActivity extends Activity {
             if (position == 0) {
                 convertView = li.inflate(R.layout.layout_btn_capture, null);
 
-//                convertView.setLayoutParams(new RelativeLayout.LayoutParams(deviceWPx / 3, deviceWPx / 3));
-
                 Button btnCapture = (Button) convertView.findViewById(R.id.btnCapture);
                 btnCapture.setOnClickListener(btnCaptureListener);
 
@@ -772,8 +775,6 @@ public class MediaPickerActivity extends Activity {
                         isPhoto = false;
 
                     convertView = li.inflate(R.layout.layout_photo, null);
-
-//                    convertView.setLayoutParams(new RelativeLayout.LayoutParams(deviceWPx / 3, deviceWPx / 3));
 
                     ImageView imgView = (ImageView) convertView.findViewById(R.id.imgView);
                     ImageView imgSelected = (ImageView) convertView.findViewById(R.id.ic_selected);
@@ -800,22 +801,6 @@ public class MediaPickerActivity extends Activity {
             }
 
             return convertView;
-        }
-    }
-
-    private class MediaItemComparator implements Comparator<MediaItem> {
-
-        @Override
-        public int compare(MediaItem lhs, MediaItem rhs) {
-            if (lhs.Id > rhs.Id) {
-                return 1;
-            }
-            else if (lhs.Id <  rhs.Id) {
-                return -1;
-            }
-            else {
-                return 0;
-            }
         }
     }
 }

@@ -31,6 +31,7 @@
             android:textStyle="bold"
             android:textSize="18sp"/>
 
+
         <Button
             android:id="@+id/btnAdd"
             android:layout_width="wrap_content"
@@ -41,7 +42,8 @@
             android:textSize="18sp"
             android:textColor="@android:color/white"
             android:textStyle="bold"
-            android:background="@android:color/transparent"/>
+            android:background="@android:color/transparent"
+            android:layout_marginLeft="10dp"/>
 
     </RelativeLayout>
 
