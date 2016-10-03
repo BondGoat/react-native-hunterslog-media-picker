@@ -17,7 +17,8 @@ Use [rnpm](https://github.com/rnpm/rnpm) to automatically complete the installat
 or link manually like so:
 
 ### iOS
-
+- Add Library RCTImageResizer in ./ios to XCode, [follow direction at here](https://facebook.github.io/react-native/docs/linking-libraries-ios.html)
+- Used as a independent component [MediaHunterslogPicker]
 
 ### Android
 ```gradle
