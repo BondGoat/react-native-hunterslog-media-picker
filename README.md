@@ -17,8 +17,15 @@ Use [rnpm](https://github.com/rnpm/rnpm) to automatically complete the installat
 or link manually like so:
 
 ### iOS
-- Add Library RCTImageResizer in ./ios to XCode, [follow direction at here](https://facebook.github.io/react-native/docs/linking-libraries-ios.html)
-- Used as a independent component [MediaHunterslogPicker]
+- Libraries need to be added to XCode, [follow direction at here](https://facebook.github.io/react-native/docs/linking-libraries-ios.html):
+  - RCTImageResizer in ./ios
+  - RTCCameraRoll in ./node_modules/react-native/Libraries
+- Insert this to Info.plist
+```Info.plist
+<key>NSPhotoLibraryUsageDescription</key>
+<string>$(PRODUCT_NAME) want to acccess your Camera Library</string>
+```
+- Use it as a independent component [MediaHunterslogPicker]
 
 ### Android
 ```gradle
