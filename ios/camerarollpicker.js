@@ -11,9 +11,6 @@ import {
   ListView,
   ActivityIndicator,
 } from 'react-native'
-import _ from 'lodash';
-
-var Strings = require('./languages');
 
 class CameraRollPicker extends Component {
   constructor(props) {
@@ -26,8 +23,6 @@ class CameraRollPicker extends Component {
       loadingMore: false,
       noMore: false,
       dataSource: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
-      videoCount: 0,
-      photoCount: 0,
     };
   }
 
@@ -46,6 +41,9 @@ class CameraRollPicker extends Component {
   componentWillReceiveProps(nextProps) {
     this.setState({
       selected: nextProps.selected,
+      dataSource: this.state.dataSource.cloneWithRows(
+        this._nEveryRow(this.state.images, this.props.imagesPerRow)
+      ),
     });
   }
 
@@ -92,12 +90,10 @@ class CameraRollPicker extends Component {
 
       var listData = this.state.images.concat(assets);
       var item = {
-        node : {}
+        node : null
       };
       // Add fake item to create Camera icon at the top
       listData.splice(0,0,item);
-
-      console.log(JSON.stringify(listData));
 
       newState.images = listData;
       newState.dataSource = this.state.dataSource.cloneWithRows(
@@ -149,7 +145,7 @@ class CameraRollPicker extends Component {
   _renderImage(item) {
     var {selectedMarker, imageMargin} = this.props;
 
-    if (_.isEmpty(item.node)) {
+    if (null === item.node) {
       return (
         <TouchableOpacity
           key={"FIRST"}
@@ -178,7 +174,7 @@ class CameraRollPicker extends Component {
           source={{uri: item.node.image.uri}}
           style={{height: this._imageSize, width: this._imageSize}} >
           {this._renderPlayIcon(item.node.image.uri)}
-          { (this._arrayObjectIndexOf(this.state.selected, 'uri', item.node.image.uri) >= 0) ? marker : null }
+          { (this._arrayObjectIndexOf(this.state.selected, item.node.image.uri) >= 0) ? marker : null }
         </Image>
       </TouchableOpacity>
     );
@@ -201,7 +197,11 @@ class CameraRollPicker extends Component {
 
   _renderFooterSpinner() {
     if (!this.state.noMore) {
-      return <ActivityIndicator style={styles.spinner} />;
+      return <ActivityIndicator
+                color="black"
+                size="large"
+                style={{ flex: 1 }}
+                />;
     }
     return null;
   }
@@ -213,69 +213,7 @@ class CameraRollPicker extends Component {
   }
 
   _selectImage(imageNode) {
-    var {max_video, max_photo, maximum, imagesPerRow, callback} = this.props;
-    var selected = this.state.selected,
-        index = this._arrayObjectIndexOf(selected, 'uri', imageNode.image.uri);
-
-    console.log("index: " + index);
-
-    if (imageNode.type.includes('Video')) {
-      if (this.state.photoCount > 0) {
-        this.props.showAlert(Strings.getAppLanguage().txt_one_type);
-        return;
-      }
-      if (this.state.videoCount >= max_video && index < 0) {
-        this.props.showAlert(Strings.getAppLanguage().txt_max_video.replace("#V", max_video));
-        return;
-      } else {
-        var video_count = this.state.videoCount;
-        if (index >= 0) {
-          selected.splice(index, 1);
-          video_count--;
-        } else {
-          selected.push(imageNode);
-          video_count++;
-        }
-
-        this.setState({videoCount: video_count});
-      }
-    }
-
-    if (imageNode.type.includes('Photo')) {
-      if (this.state.videoCount > 0) {
-        this.props.showAlert(Strings.getAppLanguage().txt_one_type);
-        return;
-      }
-      if (this.state.photoCount >= max_photo && index < 0) {
-        this.props.showAlert(Strings.getAppLanguage().txt_max_photo.replace("#P", max_photo));
-        return;
-      } else {
-        var photo_count = this.state.photoCount;
-        if (index >= 0) {
-          selected.splice(index, 1);
-          photo_count--;
-
-        } else {
-          selected.push(imageNode);
-          photo_count++;
-        }
-
-        this.setState({photoCount: photo_count});
-      }
-    }
-
-    console.log("Video count: " + video_count);
-    console.log("Photo count: " + photo_count);
-    console.log("Selected: " + JSON.stringify(selected));
-
-    this.setState({
-      selected: selected,
-      dataSource: this.state.dataSource.cloneWithRows(
-        this._nEveryRow(this.state.images, imagesPerRow)
-      ),
-    });
-
-    callback(this.state.selected, imageNode);
+    this.props.callback(imageNode);
   }
 
   _nEveryRow(data, n) {
@@ -300,14 +238,13 @@ class CameraRollPicker extends Component {
     return result;
   }
 
-  _arrayObjectIndexOf(array, property, value) {
+  _arrayObjectIndexOf(array, value) {
     var index = -1;
     for (var i = 0; i < array.length; i++) {
       if (array[i].image.uri === value) {
         return i;
       }
     }
-    // return array.map((o) => { return o[property]; }).indexOf(value);
 
     return index;
   }
