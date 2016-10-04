@@ -10,9 +10,14 @@ React Native Media Picker component, only used in Hunterslog Project. Do not cop
 ## Install
 
 `npm install react-native-hunterslog-media-picker --save`
+Also you need to install dependencies plugin if not installed yet:
+`npm install react-native-video --save`
+`npm install react-native-asset-thumbnail --save`
 
 Use [rnpm](https://github.com/rnpm/rnpm) to automatically complete the installation:  
 `rnpm link react-native-hunterslog-media-picker`
+`rnpm link react-native-video`
+`rnpm link react-native-asset-thumbnail`
 
 or link manually like so:
 
