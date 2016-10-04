@@ -10,7 +10,10 @@ import {
   TouchableOpacity,
   ListView,
   ActivityIndicator,
-} from 'react-native'
+} from 'react-native';
+import Video from "react-native-video";
+
+var tempDuration = [];
 
 class CameraRollPicker extends Component {
   constructor(props) {
@@ -104,6 +107,30 @@ class CameraRollPicker extends Component {
     this.setState(newState);
   }
 
+  _arrayDurationIndexOf(uri) {
+    var index = -1;
+    for (var i = 0; i < tempDuration.length; i++) {
+      if (tempDuration[i].uri === uri) {
+        return i;
+      }
+    }
+
+    return index;
+  }
+
+  _onGetVideoDuration(uri, duration) {
+    var index = this._arrayDurationIndexOf(uri);
+
+    if (index < 0) {
+      var item = {
+        uri: uri,
+        duration: duration
+      }
+      tempDuration.push(item);
+      console.log("Duration list: " + JSON.stringify(tempDuration));
+    }
+  }
+
   render() {
     var {scrollRenderAheadDistance, initialListSize, pageSize, removeClippedSubviews, imageMargin, backgroundColor} = this.props;
     return (
@@ -145,6 +172,12 @@ class CameraRollPicker extends Component {
   _renderImage(item) {
     var {selectedMarker, imageMargin} = this.props;
 
+    var marker = selectedMarker ? selectedMarker :
+      <Image
+        style={[styles.marker, {width: 25, height: 25, right: imageMargin + 5},]}
+        source={require('../img/circle-check.png')}
+      />;
+
     if (null === item.node) {
       return (
         <TouchableOpacity
@@ -159,11 +192,27 @@ class CameraRollPicker extends Component {
       );
     }
 
-    var marker = selectedMarker ? selectedMarker :
-      <Image
-        style={[styles.marker, {width: 25, height: 25, right: imageMargin + 5},]}
-        source={require('../img/circle-check.png')}
-      />;
+    if (item.node.type.includes('Video')) {
+      return (
+        <TouchableOpacity
+          key={item.node.image.uri}
+          style={{marginBottom: imageMargin, marginRight: imageMargin}}
+          onPress={event => this._selectImage(item.node)}>
+          <Video
+            onLoad={(e) => this._onGetVideoDuration(item.node.image.uri, e.duration)}
+            source={{uri: item.node.image.uri}}
+            paused={true}
+            style={{height: this._imageSize, width: this._imageSize}}
+            resizeMode="stretch">
+            <Image
+              style={{height: this._imageSize, width: this._imageSize}} >
+              {this._renderPlayIcon(item.node.image.uri)}
+              { (this._arrayObjectIndexOf(this.state.selected, item.node.image.uri) >= 0) ? marker : null }
+            </Image>
+          </Video>
+        </TouchableOpacity>
+      );
+    }
 
     return (
       <TouchableOpacity
@@ -213,6 +262,10 @@ class CameraRollPicker extends Component {
   }
 
   _selectImage(imageNode) {
+    var index = this._arrayDurationIndexOf(imageNode.image.uri);
+    if (index >= 0) {
+      imageNode.duration = tempDuration[index].duration;
+    }
     this.props.callback(imageNode);
   }
 
