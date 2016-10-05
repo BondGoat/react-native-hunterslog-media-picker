@@ -249,7 +249,10 @@ public class MediaPickerActivity extends Activity {
                             location.Lng = imageLong;
                             item.Location = location;
 
-                            mSelectedMediaList.add(item);
+                            for (MediaItem selectedItem : mSelectedMediaList) {
+                                selectedItem.Id += 1;
+                            }
+                            mSelectedMediaList.add(0, item);
 
                             cursor.close();
 
@@ -658,8 +661,11 @@ public class MediaPickerActivity extends Activity {
         btnPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dispatchTakePictureIntent();
-
+                if (selected_photo >= max_photo) {
+                    showWarningDialog(getString(R.string.txt_warning_photo).replace("#P", "" + max_photo));
+                } else {
+                    dispatchTakePictureIntent();
+                }
                 mDialog.dismiss();
             }
         });
@@ -667,12 +673,15 @@ public class MediaPickerActivity extends Activity {
         btnVideo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
-                takePictureIntent.putExtra("EXTRA_VIDEO_QUALITY", 1);//Set quality when record video
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivityForResult(takePictureIntent, REQUEST_VIDEO_CAPTURE);
+                if (selected_video >= max_video) {
+                    showWarningDialog(getString(R.string.txt_warning_video).replace("#V", "" + max_video));
+                } else {
+                    Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                    takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
+                    takePictureIntent.putExtra("EXTRA_VIDEO_QUALITY", 1);//Set quality when record video
+                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                        startActivityForResult(takePictureIntent, REQUEST_VIDEO_CAPTURE);
+                    }
                 }
 
                 mDialog.dismiss();
