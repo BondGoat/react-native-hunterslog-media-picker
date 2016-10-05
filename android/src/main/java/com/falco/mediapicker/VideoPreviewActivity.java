@@ -27,8 +27,8 @@ public class VideoPreviewActivity extends Activity {
         setContentView(R.layout.layout_video_preview);
 
         videoPreview = (VideoView ) findViewById(R.id.videoPreview);
-        btnBack = (Button) findViewById(R.id.btnBackVideo);
-        btnUse = (Button) findViewById(R.id.btnUseVideo);
+        btnBack = (Button) findViewById(R.id.btnBack);
+        btnUse = (Button) findViewById(R.id.btnUse);
         btnplay = (ImageButton) findViewById(R.id.btnPlayVideo);
         Intent data = getIntent();
         mCurrentVideoPath =  data.getExtras().getString("video");
