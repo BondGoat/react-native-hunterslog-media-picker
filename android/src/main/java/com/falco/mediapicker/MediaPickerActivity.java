@@ -221,14 +221,14 @@ public class MediaPickerActivity extends Activity {
                             MediaStore.Images.ImageColumns._ID,
                             MediaStore.Images.ImageColumns.DATA,
                             MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
-                            MediaStore.Images.ImageColumns.DATE_TAKEN,
+                            MediaStore.Images.ImageColumns.DATE_MODIFIED,
                             MediaStore.Images.ImageColumns.MIME_TYPE,
                             MediaStore.Images.ImageColumns.LATITUDE,
                             MediaStore.Images.ImageColumns.LONGITUDE,
                     };
                     final Cursor cursor = getContentResolver()
                             .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, null,
-                                    null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");
+                                    null, MediaStore.Images.Media.DATE_MODIFIED + " DESC");
 
                     // Put it in the image view
                     if (cursor.moveToFirst()) {
@@ -602,9 +602,7 @@ public class MediaPickerActivity extends Activity {
                     photoFile.mkdirs();
                 }
 
-                Uri photoURI = FileProvider.getUriForFile(this,
-                        getPackageName() + ".fileprovider",
-                        photoFile);
+                Uri photoURI = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             } catch (IOException ex) {
