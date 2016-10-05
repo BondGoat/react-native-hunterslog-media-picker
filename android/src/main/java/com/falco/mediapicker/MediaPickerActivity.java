@@ -603,7 +603,7 @@ public class MediaPickerActivity extends Activity {
                 }
 
                 Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.falco.mediapicker.fileprovider",
+                        getPackageName() + ".fileprovider",
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
