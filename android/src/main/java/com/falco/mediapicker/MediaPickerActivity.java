@@ -16,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -216,41 +217,47 @@ public class MediaPickerActivity extends Activity {
 
             case REQUEST_IMAGE_PREVIEW:
                 if (resultCode == RESULT_OK) {
-                    //Get latest image from gallery - Chien Nguyen
-                    String[] projection = new String[]{
-                            MediaStore.Images.ImageColumns._ID,
-                            MediaStore.Images.ImageColumns.DATA,
-                            MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
-                            MediaStore.Images.ImageColumns.DATE_MODIFIED,
-                            MediaStore.Images.ImageColumns.MIME_TYPE,
-                            MediaStore.Images.ImageColumns.LATITUDE,
-                            MediaStore.Images.ImageColumns.LONGITUDE,
-                    };
-                    final Cursor cursor = getContentResolver()
-                            .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, null,
-                                    null, MediaStore.Images.Media.DATE_MODIFIED + " DESC");
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //Get latest image from gallery - Chien Nguyen
+                            Uri uri = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                            String[] projection = {MediaStore.MediaColumns.DATA,
+                                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
+                                    MediaStore.Images.Media.LATITUDE,
+                                    MediaStore.Images.Media.LONGITUDE,
+                                    MediaStore.Video.Media.DATE_ADDED};
 
-                    // Put it in the image view
-                    if (cursor.moveToFirst()) {
-                        imageTaken = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
-                        imageLat = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LATITUDE));
-                        imageLong = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LONGITUDE));
-                    }
-                    MediaItem item = new MediaItem();
-                    LocationItem location = new LocationItem();
+                            final Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_MODIFIED + " DESC");
 
-                    item.Id = mMediaList.size();
-                    item.RealUrl = "file://" + imageTaken;
-                    item.Url = imageTaken;
-                    item.ThumbUrl = "";
-                    location.Lat = imageLat;
-                    location.Lng = imageLong;
-                    item.Location = location;
+                            // Put it in the image view
+                            assert cursor != null;
+                            if (cursor.moveToLast()) {
+                                imageTaken = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA));
+                                imageLat = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.LATITUDE));
+                                imageLong = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.LONGITUDE));
+                            }
 
-                    mSelectedMediaList.clear();
-                    mSelectedMediaList.add(item);
+                            MediaItem item = new MediaItem();
+                            LocationItem location = new LocationItem();
 
-                    new PrepareSendingData().execute();
+                            item.Id = cursor.getCount();
+                            item.RealUrl = "file://" + imageTaken;
+                            item.Url = imageTaken;
+                            item.ThumbUrl = imageTaken;
+                            location.Lat = imageLat;
+                            location.Lng = imageLong;
+                            item.Location = location;
+
+                            mSelectedMediaList.clear();
+                            mSelectedMediaList.add(item);
+
+                            cursor.close();
+
+                            mHandler.sendEmptyMessage(0);
+                        }
+                    }).start();
+
                 } else {
                     new GetMediaFiles().execute();
                 }
@@ -273,6 +280,7 @@ public class MediaPickerActivity extends Activity {
                     mSelectedMediaList.add(item);
 
                     new PrepareSendingData().execute();
+
                 } else {
                     new GetMediaFiles().execute();
                 }
@@ -296,6 +304,15 @@ public class MediaPickerActivity extends Activity {
                 break;
         }
     }
+
+    private android.os.Handler mHandler = new android.os.Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+
+            new PrepareSendingData().execute();
+        }
+    };
 
     private AdapterView.OnItemClickListener mediaItemClickListener = new AdapterView.OnItemClickListener() {
         /**
@@ -602,7 +619,9 @@ public class MediaPickerActivity extends Activity {
                     photoFile.mkdirs();
                 }
 
-                Uri photoURI = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.falco.mediapicker.fileprovider",
+                        photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             } catch (IOException ex) {

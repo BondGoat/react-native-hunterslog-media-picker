@@ -62,6 +62,19 @@ dependencies {
     	...
         <activity android:name="com.falco.mediapicker.MediaPickerActivity" android:screenOrientation="portrait"/>
         ...
+        <activity android:name="com.falco.mediapicker.PhotoPreviewActivity" />
+        <activity android:name="com.falco.mediapicker.VideoPreviewActivity" />
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="[package name].fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
+        ...
     </application>
     ...
 ```
@@ -83,6 +96,15 @@ public class MainApplication extends Application implements ReactApplication {
 }
 
 ```
+
+Create xml folder in ./res, and create a xml file named "file_paths.xml":
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-path name="hunterslog_img" path="Android/data/[package name]/files/Pictures/" />
+</paths>
+```
+
 ## Usage
 
 ```javascript

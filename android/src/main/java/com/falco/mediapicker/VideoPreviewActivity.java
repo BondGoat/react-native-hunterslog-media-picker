@@ -24,7 +24,7 @@ public class VideoPreviewActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_video);
+        setContentView(R.layout.layout_video_preview);
 
         videoPreview = (VideoView ) findViewById(R.id.videoPreview);
         btnBack = (Button) findViewById(R.id.btnBackVideo);
