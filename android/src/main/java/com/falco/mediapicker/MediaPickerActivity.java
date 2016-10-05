@@ -241,7 +241,7 @@ public class MediaPickerActivity extends Activity {
                             MediaItem item = new MediaItem();
                             LocationItem location = new LocationItem();
 
-                            item.Id = cursor.getCount();
+                            item.Id = 0;
                             item.RealUrl = "file://" + imageTaken;
                             item.Url = imageTaken;
                             item.ThumbUrl = imageTaken;
@@ -268,7 +268,7 @@ public class MediaPickerActivity extends Activity {
                     MediaItem item = new MediaItem();
                     LocationItem location = new LocationItem();
 
-                    item.Id = mMediaList.size();
+                    item.Id = 0;
                     item.RealUrl = "file://" + videoTaken;
                     item.Url = videoTaken;
                     item.ThumbUrl = "";
