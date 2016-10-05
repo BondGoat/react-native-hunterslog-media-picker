@@ -391,12 +391,12 @@ public class Utils {
 
         File file = new File(filePath);
         if (file.exists()) {
-//            Bitmap rotatedBit = rotaionImage(filePath);
+            Bitmap rotatedBit = rotaionImage(filePath);
 
-            MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), file.getName(),
+            MediaStore.Images.Media.insertImage(context.getContentResolver(), rotatedBit, file.getName(),
                     "Image captured by TrophyBook");
 
-//            rotatedBit.recycle();
+            rotatedBit.recycle();
         }
     }
 }
