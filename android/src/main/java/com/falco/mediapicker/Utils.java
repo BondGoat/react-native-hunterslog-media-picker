@@ -3,9 +3,13 @@ package com.falco.mediapicker;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import com.coremedia.iso.boxes.Container;
 import com.coremedia.iso.boxes.MovieHeaderBox;
@@ -44,6 +48,8 @@ import java.util.List;
 /**
  * Created by Bond Nguyen on 9/23/16.
  */
+
+
 public class Utils {
     public static WritableMap convertJsonToMap(JSONObject jsonObject) throws JSONException {
         WritableMap map = new WritableNativeMap();
@@ -345,5 +351,52 @@ public class Utils {
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
         return px / ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+    }
+
+    public static Bitmap rotaionImage(String path){
+        Bitmap matrixBitmap = null;
+        Bitmap originBitmap = null;
+        try{
+            ExifInterface exif = new ExifInterface(path.replace("file://", ""));
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+            Log.d("EXIF", "Exif: " + orientation);
+            android.graphics.Matrix matrix = new android.graphics.Matrix();
+            if (orientation == 6) {
+                matrix.postRotate(90);
+            }
+            else if (orientation == 3) {
+                matrix.postRotate(180);
+            }
+            else if (orientation == 8) {
+                matrix.postRotate(270);
+            }
+
+            originBitmap = BitmapFactory.decodeFile(path);
+            matrixBitmap = Bitmap.createBitmap(originBitmap, 0, 0, originBitmap.getWidth(), originBitmap.getHeight(), matrix, true);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            matrixBitmap = BitmapFactory.decodeFile(path);
+        }
+
+        return matrixBitmap;
+    }
+
+    /**
+     * Add private photo into Gallery
+     * @param filePath media path
+     * @param context context
+     */
+    public static void addImageToGallery(String filePath, Context context) throws FileNotFoundException {
+
+        File file = new File(filePath);
+        if (file.exists()) {
+//            Bitmap rotatedBit = rotaionImage(filePath);
+
+            MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), file.getName(),
+                    "Image captured by TrophyBook");
+
+//            rotatedBit.recycle();
+        }
     }
 }

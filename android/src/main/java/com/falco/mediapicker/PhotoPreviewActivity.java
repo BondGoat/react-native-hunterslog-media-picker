@@ -8,7 +8,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 
 /**
  * Created by Admin on 9/19/16.
@@ -18,41 +17,46 @@ public class PhotoPreviewActivity extends Activity {
     Bitmap bitmapPhotoPreview;
     ProgressDialog mProgressDialog;
 
-    ImageView imgPreview;
+    TouchImageView  imgPreview;
     Button btnBack, btnUse;
+    String mCurrentPhotoPath;
 
-    public final String IS_BACK_FROM_PREVIEW = "IS_BACK_FROM_PREVIEW";
     public final String PHOTO_PATH = "PHOTO_PATH";
     public final int REQUEST_IMAGE_PREVIEW = 4;
-    public final int REQUEST_VIDEO_PREVIEW = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_photo_preview);
 
-        Intent data = getIntent();
-        if (data != null) {
-            Bundle extras = data.getExtras();
-            bitmapPhotoPreview = (Bitmap) extras.get("data");
-        }
-
-        imgPreview = (ImageView) findViewById(R.id.imgPreview);
+        imgPreview = (TouchImageView ) findViewById(R.id.imgPreview);
         btnBack = (Button) findViewById(R.id.btnBack);
         btnUse = (Button) findViewById(R.id.btnUse);
+        Intent data = getIntent();
+        if (data.hasExtra("picture"))
+            mCurrentPhotoPath =  data.getExtras().getString("picture");
 
-        imgPreview.setImageBitmap(bitmapPhotoPreview);
+        imgPreview.setMaxZoom(3f);
+
+        bitmapPhotoPreview = Utils.rotaionImage(mCurrentPhotoPath.replace("file:/", ""));
+        if (bitmapPhotoPreview != null && !bitmapPhotoPreview.isRecycled())
+            imgPreview.setImageBitmap(bitmapPhotoPreview);
+
         btnBack.setOnClickListener(backListener);
         btnUse.setOnClickListener(useListener);
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        bitmapPhotoPreview.recycle();
     }
 
     private View.OnClickListener backListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            Intent data = new Intent();
-            data.putExtra(IS_BACK_FROM_PREVIEW, false);
-
-            setResult(REQUEST_IMAGE_PREVIEW, data);
             finish();
         }
     };
@@ -60,7 +64,10 @@ public class PhotoPreviewActivity extends Activity {
     private View.OnClickListener useListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-
+            Intent intent = new Intent();
+            intent.putExtra("imageTaken",mCurrentPhotoPath);
+            setResult(RESULT_OK, intent);
+            finish();
         }
     };
 

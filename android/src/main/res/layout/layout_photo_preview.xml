@@ -3,11 +3,12 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
+    <com.falco.mediapicker.TouchImageView
         android:id="@+id/imgPreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/footer"
+        android:layout_gravity="center"
+        android:gravity="center"
         android:scaleType="fitCenter"/>
 
     <RelativeLayout
@@ -35,7 +36,7 @@
             android:textSize="20sp"
             android:textColor="@android:color/white"
             android:textStyle="bold"
-            android:background="@android:color/transparent"
+            android:background="@drawable/btn_use_preview_selector"
             android:layout_centerVertical="true"
             android:padding="10dp"/>
 

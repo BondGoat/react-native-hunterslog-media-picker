@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-path name="hunterslog_img" path="/Pictures" />
+<paths>
+    <external-path name="hunterslog_img" path="Android/data/com.falco.mediapicker/files/Pictures/" />
 </paths>

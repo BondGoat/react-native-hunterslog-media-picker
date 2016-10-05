@@ -10,12 +10,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -44,9 +42,12 @@ import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -66,6 +67,12 @@ public class MediaPickerActivity extends Activity {
     List<MediaItem> mSelectedMediaList = new ArrayList<>();
     List<MediaItem> mMediaList = new ArrayList<>();
     String mCurrentPhotoPath;
+    String imageTaken;// Save image URl after take photo and send it to mSelectedMediaList
+    String imageLat;// Save image lat code after take photo and send it to mSelectedMediaList
+    String imageLong;// Save image long code after take photo and send it to mSelectedMediaList
+    String videoTaken;// Save video URl after take photo and send it to mSelectedMediaList
+    String videoLat;// Save video lat code after take photo and send it to mSelectedMediaList
+    String videoLong;// Save video long code after take photo and send it to mSelectedMediaList
     int deviceW, deviceH, imageW, deviceWPx, deviceHPx;
 
     // Permission list request code
@@ -84,15 +91,14 @@ public class MediaPickerActivity extends Activity {
 
     // Camera intent
     public final int REQUEST_IMAGE_CAPTURE = 2;
-    public final int REQUEST_VIDEO_CAPTURE = 3;
-    public final int REQUEST_IMAGE_PREVIEW = 4;
-    public final int REQUEST_VIDEO_PREVIEW = 5;
-    public final int REQUEST_TAKE_PHOTO = 6;
+    public final int REQUEST_VIDEO_CAPTURE = REQUEST_IMAGE_CAPTURE + 1;
+    public final int REQUEST_IMAGE_PREVIEW = REQUEST_VIDEO_CAPTURE + 1;
+    public final int REQUEST_VIDEO_PREVIEW = REQUEST_IMAGE_PREVIEW + 1;
+    public final int REQUEST_TAKE_PHOTO = REQUEST_VIDEO_PREVIEW + 1;
 
     // --------------------------
 
     public final String TAG = MediaPickerActivity.this.getClass().getSimpleName();
-    public final String IS_BACK_FROM_PREVIEW = "IS_BACK_FROM_PREVIEW";
 
     boolean isReadExternalStoragePermissionAccepted = false;
     boolean isWriteExternalStoragePermissionAccepted = false;
@@ -111,7 +117,7 @@ public class MediaPickerActivity extends Activity {
             if (receivedIntent.hasExtra(MAX_UPLOADABLE_VIDEO_DURATION))
                 max_video_duration = receivedIntent.getIntExtra(MAX_UPLOADABLE_VIDEO_DURATION, 10);
             if (receivedIntent.hasExtra(MEDIA_RESULT)) {
-                String jsonArr =  receivedIntent.getStringExtra(MEDIA_RESULT);
+                String jsonArr = receivedIntent.getStringExtra(MEDIA_RESULT);
 
                 Gson gson = new Gson();
                 MediaItem[] mediaList = gson.fromJson(jsonArr, MediaItem[].class);
@@ -160,23 +166,19 @@ public class MediaPickerActivity extends Activity {
             @Override
             public void onClick(View view) {
                 if (mSelectedMediaList.size() > 0)
-                    new PrepairSendingData().execute();
+                    new PrepareSendingData().execute();
                 else {
                     showWarningDialog(getString(R.string.txt_limit_add));
                 }
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
 
         requestPermissions();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case REQUEST_IMAGE_CAPTURE:
                 dispatchTakePictureIntent();
@@ -184,18 +186,112 @@ public class MediaPickerActivity extends Activity {
                 break;
 
             case REQUEST_VIDEO_CAPTURE:
+                String[] videolist = new String[]{
+                        MediaStore.Video.VideoColumns._ID,
+                        MediaStore.Video.VideoColumns.DATA,
+                        MediaStore.Video.VideoColumns.BUCKET_DISPLAY_NAME,
+                        MediaStore.Video.VideoColumns.DATE_TAKEN,
+                        MediaStore.Video.VideoColumns.MIME_TYPE,
+                        MediaStore.Video.VideoColumns.LATITUDE,
+                        MediaStore.Video.VideoColumns.LONGITUDE,
+                };
+                final Cursor cursorvideo = getContentResolver()
+                        .query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, videolist, null,
+                                null, MediaStore.Video.VideoColumns.DATE_TAKEN + " DESC");
+
+                // Put it in the image view
+                if (cursorvideo.moveToFirst()) {
+                    videoTaken = cursorvideo.getString(cursorvideo.getColumnIndex(MediaStore.Video.VideoColumns.DATA));
+                    videoLat = cursorvideo.getString(cursorvideo.getColumnIndex(MediaStore.Video.VideoColumns.LATITUDE));
+                    videoLong = cursorvideo.getString(cursorvideo.getColumnIndex(MediaStore.Video.VideoColumns.LONGITUDE));
+                    if (videoTaken != null) {
+                        Intent videoPreview = new Intent(this, VideoPreviewActivity.class);
+                        videoPreview.putExtra("video", videoTaken);
+                        startActivityForResult(videoPreview, REQUEST_VIDEO_PREVIEW);
+
+                    }
+                }
+
                 break;
 
             case REQUEST_IMAGE_PREVIEW:
+                if (resultCode == RESULT_OK) {
+                    //Get latest image from gallery - Chien Nguyen
+                    String[] projection = new String[]{
+                            MediaStore.Images.ImageColumns._ID,
+                            MediaStore.Images.ImageColumns.DATA,
+                            MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
+                            MediaStore.Images.ImageColumns.DATE_TAKEN,
+                            MediaStore.Images.ImageColumns.MIME_TYPE,
+                            MediaStore.Images.ImageColumns.LATITUDE,
+                            MediaStore.Images.ImageColumns.LONGITUDE,
+                    };
+                    final Cursor cursor = getContentResolver()
+                            .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, null,
+                                    null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");
+
+                    // Put it in the image view
+                    if (cursor.moveToFirst()) {
+                        imageTaken = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+                        imageLat = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LATITUDE));
+                        imageLong = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LONGITUDE));
+                    }
+                    MediaItem item = new MediaItem();
+                    LocationItem location = new LocationItem();
+
+                    item.Id = mMediaList.size();
+                    item.RealUrl = "file://" + imageTaken;
+                    item.Url = imageTaken;
+                    item.ThumbUrl = "";
+                    location.Lat = imageLat;
+                    location.Lng = imageLong;
+                    item.Location = location;
+
+                    mSelectedMediaList.clear();
+                    mSelectedMediaList.add(item);
+
+                    new PrepareSendingData().execute();
+                } else {
+                    new GetMediaFiles().execute();
+                }
                 break;
 
             case REQUEST_VIDEO_PREVIEW:
+                if (resultCode == RESULT_OK) {
+                    MediaItem item = new MediaItem();
+                    LocationItem location = new LocationItem();
+
+                    item.Id = mMediaList.size();
+                    item.RealUrl = "file://" + videoTaken;
+                    item.Url = videoTaken;
+                    item.ThumbUrl = "";
+                    location.Lat = videoLat;
+                    location.Lng = videoLong;
+                    item.Location = location;
+
+                    mSelectedMediaList.clear();
+                    mSelectedMediaList.add(item);
+
+                    new PrepareSendingData().execute();
+                } else {
+                    new GetMediaFiles().execute();
+                }
+
                 break;
 
             case REQUEST_TAKE_PHOTO:
-                galleryAddPic();
+//                galleryAddPic();
 
-                new GetMediaFiles().execute();
+                try {
+                    Utils.addImageToGallery(mCurrentPhotoPath.replace("file:/", ""), getApplicationContext());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                Intent photoPreview = new Intent(this, PhotoPreviewActivity.class);
+
+                photoPreview.putExtra("picture", mCurrentPhotoPath);
+                startActivityForResult(photoPreview, REQUEST_IMAGE_PREVIEW);
 
                 break;
         }
@@ -324,7 +420,8 @@ public class MediaPickerActivity extends Activity {
                 }
                 break;
 
-            default: break;
+            default:
+                break;
         }
     }
 
@@ -338,8 +435,9 @@ public class MediaPickerActivity extends Activity {
 
     /**
      * Request permission
+     *
      * @param permissionResultCode Result code
-     * @param permission permission name
+     * @param permission           permission name
      */
     private void requestPermission(int permissionResultCode, String permission) {
         // Here, thisActivity is the current activity
@@ -395,7 +493,8 @@ public class MediaPickerActivity extends Activity {
         String[] projection = {MediaStore.MediaColumns.DATA,
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
                 MediaStore.Images.Media.LATITUDE,
-                MediaStore.Images.Media.LONGITUDE};
+                MediaStore.Images.Media.LONGITUDE,
+                MediaStore.Video.Media.DATE_ADDED};
 
         runQuery(activity, uri, projection);
     }
@@ -408,9 +507,10 @@ public class MediaPickerActivity extends Activity {
     public void getAllShownVideosPath(Activity activity) {
 
         Uri uri = android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = { MediaStore.MediaColumns.DATA,
+        String[] projection = {MediaStore.MediaColumns.DATA,
                 MediaStore.Video.Media.LATITUDE,
-                MediaStore.Video.Media.LONGITUDE };
+                MediaStore.Video.Media.LONGITUDE,
+                MediaStore.Video.Media.DATE_ADDED};
 
         runQuery(activity, uri, projection);
 
@@ -425,12 +525,10 @@ public class MediaPickerActivity extends Activity {
         assert cursor != null;
         column_index_data = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
         while (cursor.moveToNext()) {
-            absolutePathOfImage= cursor.getString(column_index_data);
+            absolutePathOfImage = cursor.getString(column_index_data);
 
             lat = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.LATITUDE));
             lng = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.LONGITUDE));
-
-            Log.e(TAG, absolutePathOfImage + " - " + lat + "," + lng);
 
             LocationItem location = new LocationItem();
             location.Lat = lat;
@@ -442,6 +540,7 @@ public class MediaPickerActivity extends Activity {
             item.Url = "file://" + absolutePathOfImage;
             item.ThumbUrl = "";
             item.Location = location;
+            item.Created_At = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
 
             mMediaList.add(item);
         }
@@ -460,8 +559,6 @@ public class MediaPickerActivity extends Activity {
                 }
             }
         }
-
-        Log.e(TAG, "" + mMediaList.get(0).IsChecked);
     }
 
     private String getStringImage(Bitmap bmp) {
@@ -501,27 +598,38 @@ public class MediaPickerActivity extends Activity {
                 Log.v(TAG, "SAVING VIA INTENT");
 
                 // Continue only if the File was successfully created
-                if (photoFile != null) {
-                    Uri photoURI = FileProvider.getUriForFile(this,
-                            "com.falco.mediapicker.fileprovider",
-                            photoFile);
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                    startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                if (!photoFile.exists()) {
+                    photoFile.mkdirs();
                 }
+
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.falco.mediapicker.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             } catch (IOException ex) {
                 ex.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
 
     private void galleryAddPic() {
-        Log.v(TAG, "ADD TO GALLERY");
+        Log.v(TAG, "ADD TO GALLERY " + mCurrentPhotoPath);
 
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(mCurrentPhotoPath);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        this.sendBroadcast(mediaScanIntent);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            File f = new File(mCurrentPhotoPath);
+            Uri contentUri = Uri.fromFile(f);
+            mediaScanIntent.setData(contentUri);
+            this.sendBroadcast(mediaScanIntent);
+        }
+        else {
+            sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse(mCurrentPhotoPath)));
+        }
+
     }
 
     private void showActionDialog() {
@@ -535,10 +643,7 @@ public class MediaPickerActivity extends Activity {
         btnPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                }
+                dispatchTakePictureIntent();
 
                 mDialog.dismiss();
             }
@@ -547,8 +652,10 @@ public class MediaPickerActivity extends Activity {
         btnVideo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                takePictureIntent.putExtra("android.provider.MediaStore.EXTRA_DURATION_‌​LIMIT", MAX_UPLOADABLE_VIDEO_DURATION);
+                takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
+                takePictureIntent.putExtra("EXTRA_VIDEO_QUALITY", 1);//Set quality when record video
                 if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(takePictureIntent, REQUEST_VIDEO_CAPTURE);
                 }
@@ -638,11 +745,30 @@ public class MediaPickerActivity extends Activity {
                 gridMedia.setAdapter(imageAdapter);
             }
 
+            Collections.sort(mMediaList, new Comparator<MediaItem>() {
+                @Override
+                public int compare(MediaItem lhs, MediaItem rhs) {
+                    try {
+                        long lhTime = Long.parseLong(lhs.Created_At);
+                        long rhTime = Long.parseLong(rhs.Created_At);
+
+                        if (lhTime > rhTime)
+                            return -1;
+
+                        if (lhTime < rhTime)
+                            return 1;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return 0;
+                }
+            });
+
             imageAdapter.notifyDataSetChanged();
         }
     }
 
-    class PrepairSendingData extends AsyncTask<Void, Void, String> {
+    class PrepareSendingData extends AsyncTask<Void, Void, String> {
 
         @Override
         protected void onPreExecute() {
@@ -672,47 +798,20 @@ public class MediaPickerActivity extends Activity {
                     }
 
                 } else {
+                    int scaleW = 0, scaleH = 0;
+                    Bitmap matrixBitmap = Utils.rotaionImage(item.RealUrl.replace("file://", ""));
 
-                    Bitmap scaledBitmap = null;
-                    try {
-                        ExifInterface exif = new ExifInterface(item.RealUrl.replace("file://", ""));
-                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
-                        Log.d("EXIF", "Exif: " + orientation);
-                        Matrix matrix = new Matrix();
-                        if (orientation == 6) {
-                            matrix.postRotate(90);
-                        }
-                        else if (orientation == 3) {
-                            matrix.postRotate(180);
-                        }
-                        else if (orientation == 8) {
-                            matrix.postRotate(270);
-                        }
 
-                        Bitmap originBitmap = BitmapFactory.decodeFile(item.RealUrl.replace("file://", ""));
-                        Bitmap matrixBitmap = Bitmap.createBitmap(originBitmap, 0, 0, originBitmap.getWidth(), originBitmap.getHeight(), matrix, true);
-                        int scaleW = matrixBitmap.getWidth();
-                        int scaleH = matrixBitmap.getHeight();
-                        if (matrixBitmap.getWidth() > MAX_SCALED_SIZE) {
-                            scaleW = MAX_SCALED_SIZE;
-                            scaleH = (MAX_SCALED_SIZE * matrixBitmap.getHeight()) / matrixBitmap.getWidth();
-                        }
-
-                        scaledBitmap = Bitmap.createScaledBitmap(matrixBitmap, scaleW, scaleH, true);
-
-                        matrixBitmap.recycle();
-                        originBitmap.recycle();
+                    if (matrixBitmap.getWidth() > MAX_SCALED_SIZE) {
+                        scaleW = MAX_SCALED_SIZE;
+                        scaleH = (MAX_SCALED_SIZE * matrixBitmap.getHeight()) / matrixBitmap.getWidth();
                     }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
+
+                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(matrixBitmap, scaleW, scaleH, true);
 
                     String url = Utils.saveImage(getApplicationContext(), scaledBitmap, item.RealUrl);
                     item.Url = "file://" + url;
                     item.ThumbUrl = "file://" + url;
-
-
-                    scaledBitmap.recycle();
                 }
             }
 
