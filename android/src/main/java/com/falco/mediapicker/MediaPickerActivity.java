@@ -249,7 +249,6 @@ public class MediaPickerActivity extends Activity {
                             location.Lng = imageLong;
                             item.Location = location;
 
-                            mSelectedMediaList.clear();
                             mSelectedMediaList.add(item);
 
                             cursor.close();
@@ -276,7 +275,6 @@ public class MediaPickerActivity extends Activity {
                     location.Lng = videoLong;
                     item.Location = location;
 
-                    mSelectedMediaList.clear();
                     mSelectedMediaList.add(item);
 
                     new PrepareSendingData().execute();
