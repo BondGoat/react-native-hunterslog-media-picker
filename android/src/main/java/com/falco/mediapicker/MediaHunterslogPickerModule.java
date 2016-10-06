@@ -63,6 +63,9 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
 
             intent.putExtra(MEDIA_RESULT, selectedList);
 
+            if (MediaPickerActivity.mMediaList != null)
+                MediaPickerActivity.mMediaList.clear();
+
             currentActivity.startActivityForResult(intent, MEDIA_RESULT_CODE);
         }
     }
