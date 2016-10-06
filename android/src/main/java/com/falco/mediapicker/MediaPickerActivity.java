@@ -185,6 +185,20 @@ public class MediaPickerActivity extends Activity {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (mMediaList != null) {
+            mMediaList.clear();
+            mMediaList = null;
+        }
+        if (mSelectedMediaList != null) {
+            mSelectedMediaList.clear();
+            mSelectedMediaList = null;
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
