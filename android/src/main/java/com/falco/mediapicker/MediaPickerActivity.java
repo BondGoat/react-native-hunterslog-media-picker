@@ -124,13 +124,13 @@ public class MediaPickerActivity extends Activity {
 
                 Gson gson = new Gson();
                 MediaItem[] mediaList = gson.fromJson(jsonArr, MediaItem[].class);
+
                 if (mSelectedMediaList == null)
                     mSelectedMediaList = new ArrayList<>();
 
                 if (mediaList != null && mediaList.length > 0) {
                     for (MediaItem item : mediaList) {
                         Log.e(TAG, "" + item.Id);
-
                         mSelectedMediaList.add(item);
 
                         if (item.RealUrl.toLowerCase().contains("mp4"))
@@ -178,11 +178,6 @@ public class MediaPickerActivity extends Activity {
                 }
             }
         });
-
-        if (mMediaList == null)
-            mMediaList = new ArrayList<>();
-        if (mSelectedMediaList == null)
-            mSelectedMediaList = new ArrayList<>();
     }
 
     @Override
@@ -268,10 +263,11 @@ public class MediaPickerActivity extends Activity {
                             item.Location = location;
                             item.IsChecked = true;
 
-                            for (MediaItem selectedItem : mSelectedMediaList) {
-                                selectedItem.Id += 1;
-                            }
-                            mSelectedMediaList.add(0, item);
+                            if (mSelectedMediaList == null)
+                                mSelectedMediaList = new ArrayList<>();
+
+                            mSelectedMediaList.clear();
+                            mSelectedMediaList.add(item);
 
                             cursor.close();
 
@@ -313,6 +309,10 @@ public class MediaPickerActivity extends Activity {
                             item.Location = location;
                             item.IsChecked = true;
 
+                            if (mSelectedMediaList == null)
+                                mSelectedMediaList = new ArrayList<>();
+
+                            mSelectedMediaList.clear();
                             mSelectedMediaList.add(item);
 
                             cursor.close();
@@ -613,7 +613,9 @@ public class MediaPickerActivity extends Activity {
         for (MediaItem item : mSelectedMediaList) {
             if (item != null) {
                 for (MediaItem originItem : mMediaList) {
-                    if (originItem != null && originItem.Id == item.Id) {
+                    if (originItem != null &&
+                            originItem.RealUrl != null &&
+                            originItem.RealUrl.equals(item.RealUrl)) {
                         originItem.IsChecked = item.IsChecked;
                         break;
                     }
@@ -706,38 +708,26 @@ public class MediaPickerActivity extends Activity {
         btnPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (selected_photo >= max_photo) {
-                    showWarningDialog(getString(R.string.txt_warning_photo).replace("#P", "" + max_photo));
-                } else {
-                    if (selected_video > 0) {
-                        showWarningDialog(getString(R.string.txt_warning));
-                    } else {
-                        dispatchTakePictureIntent();
-                        mDialog.dismiss();
-                    }
-                }
+
+                dispatchTakePictureIntent();
+                mDialog.dismiss();
+
             }
         });
 
         btnVideo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (selected_video >= max_video) {
-                    showWarningDialog(getString(R.string.txt_warning_video).replace("#V", "" + max_video));
-                } else {
-                    if (selected_photo > 0) {
-                        showWarningDialog(getString(R.string.txt_warning));
-                    } else {
-                        Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                        takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
-                        takePictureIntent.putExtra("EXTRA_VIDEO_QUALITY", 1);//Set quality when record video
-                        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                            startActivityForResult(takePictureIntent, REQUEST_VIDEO_CAPTURE);
-                        }
 
-                        mDialog.dismiss();
-                    }
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
+                takePictureIntent.putExtra("EXTRA_VIDEO_QUALITY", 1);//Set quality when record video
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivityForResult(takePictureIntent, REQUEST_VIDEO_CAPTURE);
                 }
+
+                mDialog.dismiss();
+
             }
         });
 
@@ -792,6 +782,8 @@ public class MediaPickerActivity extends Activity {
             super.onPreExecute();
             if (mMediaList != null) {
                 mMediaList.clear();
+            } else {
+                mMediaList = new ArrayList<>();
             }
 
             // Pre setup media list to have first item as Capture button
