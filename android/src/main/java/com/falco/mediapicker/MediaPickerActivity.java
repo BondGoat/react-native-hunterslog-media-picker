@@ -124,6 +124,8 @@ public class MediaPickerActivity extends Activity {
 
                 Gson gson = new Gson();
                 MediaItem[] mediaList = gson.fromJson(jsonArr, MediaItem[].class);
+                if (mSelectedMediaList == null)
+                    mSelectedMediaList = new ArrayList<>();
 
                 if (mediaList != null && mediaList.length > 0) {
                     for (MediaItem item : mediaList) {
