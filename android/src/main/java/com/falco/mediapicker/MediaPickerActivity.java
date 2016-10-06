@@ -44,7 +44,6 @@ import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -875,11 +874,11 @@ public class MediaPickerActivity extends Activity {
                     }
 
                 } else {
-                    int scaleW = 0, scaleH = 0;
+
                     Bitmap matrixBitmap = Utils.rotaionImage(item.RealUrl.replace("file://", ""));
+                    int scaleW = matrixBitmap.getWidth(), scaleH = matrixBitmap.getHeight();
 
-
-                    if (matrixBitmap.getWidth() > MAX_SCALED_SIZE) {
+                    if (scaleW > MAX_SCALED_SIZE) {
                         scaleW = MAX_SCALED_SIZE;
                         scaleH = (MAX_SCALED_SIZE * matrixBitmap.getHeight()) / matrixBitmap.getWidth();
                     }
