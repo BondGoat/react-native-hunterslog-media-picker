@@ -130,6 +130,7 @@ public class MediaPickerActivity extends Activity {
                 if (mediaList != null && mediaList.length > 0) {
                     for (MediaItem item : mediaList) {
                         Log.e(TAG, "" + item.Id);
+
                         mSelectedMediaList.add(item);
 
                         if (item.RealUrl.toLowerCase().contains("mp4"))
@@ -177,31 +178,18 @@ public class MediaPickerActivity extends Activity {
                 }
             }
         });
+
+        if (mMediaList == null)
+            mMediaList = new ArrayList<>();
+        if (mSelectedMediaList == null)
+            mSelectedMediaList = new ArrayList<>();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (mMediaList == null)
-            mMediaList = new ArrayList<>();
-        if (mSelectedMediaList == null)
-            mSelectedMediaList = new ArrayList<>();
 
         requestPermissions();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if (mMediaList != null) {
-            mMediaList.clear();
-            mMediaList = null;
-        }
-        if (mSelectedMediaList != null) {
-            mSelectedMediaList.clear();
-            mSelectedMediaList = null;
-        }
     }
 
     @Override
@@ -548,8 +536,10 @@ public class MediaPickerActivity extends Activity {
                 isWriteExternalStoragePermissionAccepted = true;
 
             if (isReadExternalStoragePermissionAccepted && isWriteExternalStoragePermissionAccepted) {
-                if (mMediaList == null || mMediaList.size() == 0)
+                if (mMediaList == null || mMediaList.size() == 0) {
+                    Log.e(TAG, "GET DATA : " + ((mMediaList == null) ? "NULL" : mMediaList.size()));
                     new GetMediaFiles().execute();
+                }
             }
         }
     }
@@ -597,7 +587,6 @@ public class MediaPickerActivity extends Activity {
         column_index_data = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
         while (cursor.moveToNext()) {
             absolutePathOfImage = cursor.getString(column_index_data);
-            Log.e(TAG, absolutePathOfImage);
 
             lat = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.LATITUDE));
             lng = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.LONGITUDE));
@@ -779,7 +768,7 @@ public class MediaPickerActivity extends Activity {
 
     private void showWaitingDialog() {
         if (mProgressDialog == null) {
-            mProgressDialog = new ProgressDialog(MediaPickerActivity.this);
+            mProgressDialog = new ProgressDialog(this);
             mProgressDialog.setMessage(getString(R.string.txt_loading));
             mProgressDialog.setCancelable(false);
         }
@@ -925,6 +914,16 @@ public class MediaPickerActivity extends Activity {
                 data.putExtra(MEDIA_RESULT, s);
 
                 setResult(MEDIA_RESULT_CODE, data);
+
+                if (mMediaList != null) {
+                    mMediaList.clear();
+                    mMediaList = null;
+                }
+                if (mSelectedMediaList != null) {
+                    mSelectedMediaList.clear();
+                    mSelectedMediaList = null;
+                }
+
                 finish();
             }
         }
