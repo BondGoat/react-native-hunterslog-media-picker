@@ -20,16 +20,16 @@
             android:layout_height="30dp"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
-            android:background="@drawable/ico_back_selector"/>
+            android:background="@drawable/ico_back_selector" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="@string/txt_media_picker_header"
             android:textColor="@android:color/white"
-            android:textStyle="bold"
-            android:textSize="18sp"/>
+            android:textSize="18sp"
+            android:gravity="center" />
 
 
         <Button
@@ -41,9 +41,7 @@
             android:text="@string/txt_add"
             android:textSize="18sp"
             android:textColor="@android:color/white"
-            android:textStyle="bold"
-            android:background="@android:color/transparent"
-            android:layout_marginLeft="10dp"/>
+            android:background="@android:color/transparent" />
 
     </RelativeLayout>
 
@@ -61,6 +59,6 @@
         android:scrollbarStyle="outsideOverlay"
         android:scrollbarAlwaysDrawHorizontalTrack="true"
         android:fastScrollEnabled="true"
-        android:fastScrollStyle="@android:style/Widget.Material.FastScroll"/>
+        android:fastScrollStyle="@android:style/Widget.Material.FastScroll" />
 
 </RelativeLayout>

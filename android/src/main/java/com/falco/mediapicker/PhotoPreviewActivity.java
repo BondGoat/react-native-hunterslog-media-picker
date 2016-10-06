@@ -17,7 +17,7 @@ public class PhotoPreviewActivity extends Activity {
     Bitmap bitmapPhotoPreview;
     ProgressDialog mProgressDialog;
 
-    TouchImageView  imgPreview;
+    TouchImageView imgPreview;
     Button btnBack, btnUse;
     String mCurrentPhotoPath;
 
@@ -29,12 +29,12 @@ public class PhotoPreviewActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_photo_preview);
 
-        imgPreview = (TouchImageView ) findViewById(R.id.imgPreview);
+        imgPreview = (TouchImageView) findViewById(R.id.imgPreview);
         btnBack = (Button) findViewById(R.id.btnBack);
         btnUse = (Button) findViewById(R.id.btnUse);
         Intent data = getIntent();
         if (data.hasExtra("picture"))
-            mCurrentPhotoPath =  data.getExtras().getString("picture");
+            mCurrentPhotoPath = data.getExtras().getString("picture");
 
         imgPreview.setMaxZoom(3f);
 
@@ -51,7 +51,8 @@ public class PhotoPreviewActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
 
-        bitmapPhotoPreview.recycle();
+        if (bitmapPhotoPreview != null)
+            bitmapPhotoPreview.recycle();
     }
 
     private View.OnClickListener backListener = new View.OnClickListener() {
@@ -65,7 +66,7 @@ public class PhotoPreviewActivity extends Activity {
         @Override
         public void onClick(View view) {
             Intent intent = new Intent();
-            intent.putExtra("imageTaken",mCurrentPhotoPath);
+            intent.putExtra("imageTaken", mCurrentPhotoPath);
             setResult(RESULT_OK, intent);
             finish();
         }

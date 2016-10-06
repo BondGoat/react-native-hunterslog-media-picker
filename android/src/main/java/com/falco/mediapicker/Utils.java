@@ -62,13 +62,13 @@ public class Utils {
                 map.putMap(key, convertJsonToMap((JSONObject) value));
             } else if (value instanceof JSONArray) {
                 map.putArray(key, convertJsonToArray((JSONArray) value));
-            } else if (value instanceof  Boolean) {
+            } else if (value instanceof Boolean) {
                 map.putBoolean(key, (Boolean) value);
-            } else if (value instanceof  Integer) {
+            } else if (value instanceof Integer) {
                 map.putInt(key, (Integer) value);
-            } else if (value instanceof  Double) {
+            } else if (value instanceof Double) {
                 map.putDouble(key, (Double) value);
-            } else if (value instanceof String)  {
+            } else if (value instanceof String) {
                 map.putString(key, (String) value);
             } else {
                 map.putString(key, value.toString());
@@ -84,15 +84,15 @@ public class Utils {
             Object value = jsonArray.get(i);
             if (value instanceof JSONObject) {
                 array.pushMap(convertJsonToMap((JSONObject) value));
-            } else if (value instanceof  JSONArray) {
+            } else if (value instanceof JSONArray) {
                 array.pushArray(convertJsonToArray((JSONArray) value));
-            } else if (value instanceof  Boolean) {
+            } else if (value instanceof Boolean) {
                 array.pushBoolean((Boolean) value);
-            } else if (value instanceof  Integer) {
+            } else if (value instanceof Integer) {
                 array.pushInt((Integer) value);
-            } else if (value instanceof  Double) {
+            } else if (value instanceof Double) {
                 array.pushDouble((Double) value);
-            } else if (value instanceof String)  {
+            } else if (value instanceof String) {
                 array.pushString((String) value);
             } else {
                 array.pushString(value.toString());
@@ -260,7 +260,7 @@ public class Utils {
         //use one of overloaded setDataSource() functions to set your data source
         retriever.setDataSource(context, Uri.fromFile(videoFile));
         String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        duration = Long.parseLong(time );
+        duration = Long.parseLong(time);
 
         return duration;
     }
@@ -279,6 +279,7 @@ public class Utils {
 
     /**
      * save bitmap to internal storage
+     *
      * @param bitmap
      * @return
      */
@@ -304,8 +305,10 @@ public class Utils {
         return "";
     }
 
-    /** Create a File for saving an image or video */
-    public static  File getOutputMediaFile(Context context, String filePath, String ext){
+    /**
+     * Create a File for saving an image or video
+     */
+    public static File getOutputMediaFile(Context context, String filePath, String ext) {
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
         File mediaStorageDir = context.getCacheDir();
@@ -314,15 +317,15 @@ public class Utils {
         // between applications and persist after your app has been uninstalled.
 
         // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
                 return null;
             }
         }
         // Create a media file name
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
         File mediaFile;
-        String mImageName="MI_" + timeStamp + filePath.hashCode() + "." + ext;
+        String mImageName = "MI_" + timeStamp + filePath.hashCode() + "." + ext;
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
         return mediaFile;
     }
@@ -330,44 +333,42 @@ public class Utils {
     /**
      * This method converts dp unit to equivalent pixels, depending on device density.
      *
-     * @param dp A value in dp (density independent pixels) unit. Which we need to convert into pixels
+     * @param dp      A value in dp (density independent pixels) unit. Which we need to convert into pixels
      * @param context Context to get resources and device specific display metrics
      * @return A float value to represent px equivalent to dp depending on device density
      */
-    public static float convertDpToPixel(float dp, Context context){
+    public static float convertDpToPixel(float dp, Context context) {
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
-        return dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return dp * ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
     /**
      * This method converts device specific pixels to density independent pixels.
      *
-     * @param px A value in px (pixels) unit. Which we need to convert into db
+     * @param px      A value in px (pixels) unit. Which we need to convert into db
      * @param context Context to get resources and device specific display metrics
      * @return A float value to represent dp equivalent to px value
      */
-    public static float convertPixelsToDp(float px, Context context){
+    public static float convertPixelsToDp(float px, Context context) {
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
-        return px / ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return px / ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
-    public static Bitmap rotaionImage(String path){
+    public static Bitmap rotaionImage(String path) {
         Bitmap matrixBitmap = null;
         Bitmap originBitmap = null;
-        try{
+        try {
             ExifInterface exif = new ExifInterface(path.replace("file://", ""));
             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
             Log.d("EXIF", "Exif: " + orientation);
             android.graphics.Matrix matrix = new android.graphics.Matrix();
             if (orientation == 6) {
                 matrix.postRotate(90);
-            }
-            else if (orientation == 3) {
+            } else if (orientation == 3) {
                 matrix.postRotate(180);
-            }
-            else if (orientation == 8) {
+            } else if (orientation == 8) {
                 matrix.postRotate(270);
             }
 
@@ -384,8 +385,9 @@ public class Utils {
 
     /**
      * Add private photo into Gallery
+     *
      * @param filePath media path
-     * @param context context
+     * @param context  context
      */
     public static void addImageToGallery(String filePath, Context context) throws FileNotFoundException {
 

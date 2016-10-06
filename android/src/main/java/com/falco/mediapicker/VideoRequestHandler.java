@@ -14,7 +14,8 @@ import java.io.IOException;
  * Created by Bond Nguyen on 9/18/16.
  */
 public class VideoRequestHandler extends RequestHandler {
-    public static final String SCHEME_VIEDEO="video";
+    public static final String SCHEME_VIEDEO = "video";
+
     @Override
     public boolean canHandleRequest(Request data) {
         String scheme = data.uri.getScheme();

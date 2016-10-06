@@ -8,6 +8,6 @@
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:background="@drawable/btn_media_capture_selector"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true" />
 
 </RelativeLayout>

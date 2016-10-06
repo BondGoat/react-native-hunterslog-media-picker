@@ -26,12 +26,12 @@ public class VideoPreviewActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_video_preview);
 
-        videoPreview = (VideoView ) findViewById(R.id.videoPreview);
+        videoPreview = (VideoView) findViewById(R.id.videoPreview);
         btnBack = (Button) findViewById(R.id.btnBack);
         btnUse = (Button) findViewById(R.id.btnUse);
         btnplay = (ImageButton) findViewById(R.id.btnPlayVideo);
         Intent data = getIntent();
-        mCurrentVideoPath =  data.getExtras().getString("video");
+        mCurrentVideoPath = data.getExtras().getString("video");
 
         Uri uri = Uri.parse(mCurrentVideoPath);
         videoPreview.setMediaController(new MediaController(this));
@@ -43,11 +43,9 @@ public class VideoPreviewActivity extends Activity {
         btnUse.setOnClickListener(useListener);
 
         //Move status bar to start point when video is finished
-        videoPreview.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
-        {
+        videoPreview.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
-            public void onCompletion(MediaPlayer mediaPlayer)
-            {
+            public void onCompletion(MediaPlayer mediaPlayer) {
                 videoPreview.seekTo(50);
                 btnplay.setVisibility(View.VISIBLE);
             }
@@ -75,7 +73,7 @@ public class VideoPreviewActivity extends Activity {
         @Override
         public void onClick(View view) {
             Intent intent = new Intent();
-            intent.putExtra("videoTaken",mCurrentVideoPath);
+            intent.putExtra("videoTaken", mCurrentVideoPath);
             setResult(RESULT_OK, intent);
             finish();
         }

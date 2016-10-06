@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -65,8 +66,6 @@ public class MediaPickerActivity extends Activity {
     int max_photo = 10, max_video = 1, max_video_duration = 30;
     int selected_photo = 0, selected_video = 0;
     Dialog mDialog;
-    List<MediaItem> mSelectedMediaList = new ArrayList<>();
-    List<MediaItem> mMediaList = new ArrayList<>();
     String mCurrentPhotoPath;
     String imageTaken;// Save image URl after take photo and send it to mSelectedMediaList
     String imageLat;// Save image lat code after take photo and send it to mSelectedMediaList
@@ -75,6 +74,9 @@ public class MediaPickerActivity extends Activity {
     String videoLat;// Save video lat code after take photo and send it to mSelectedMediaList
     String videoLong;// Save video long code after take photo and send it to mSelectedMediaList
     int deviceW, deviceH, imageW, deviceWPx, deviceHPx;
+
+    public static List<MediaItem> mSelectedMediaList = new ArrayList<>();
+    public static List<MediaItem> mMediaList = new ArrayList<>();
 
     // Permission list request code
     public final static int READ_EXTERNAL_STORAGE = 0;
@@ -173,6 +175,11 @@ public class MediaPickerActivity extends Activity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         requestPermissions();
     }
@@ -187,29 +194,32 @@ public class MediaPickerActivity extends Activity {
                 break;
 
             case REQUEST_VIDEO_CAPTURE:
-                String[] videolist = new String[]{
-                        MediaStore.Video.VideoColumns._ID,
-                        MediaStore.Video.VideoColumns.DATA,
-                        MediaStore.Video.VideoColumns.BUCKET_DISPLAY_NAME,
-                        MediaStore.Video.VideoColumns.DATE_TAKEN,
-                        MediaStore.Video.VideoColumns.MIME_TYPE,
-                        MediaStore.Video.VideoColumns.LATITUDE,
-                        MediaStore.Video.VideoColumns.LONGITUDE,
-                };
-                final Cursor cursorvideo = getContentResolver()
-                        .query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, videolist, null,
-                                null, MediaStore.Video.VideoColumns.DATE_TAKEN + " DESC");
+                if (data != null) {
+                    String[] videolist = new String[]{
+                            MediaStore.Video.VideoColumns._ID,
+                            MediaStore.Video.VideoColumns.DATA,
+                            MediaStore.Video.VideoColumns.BUCKET_DISPLAY_NAME,
+                            MediaStore.Video.VideoColumns.DATE_TAKEN,
+                            MediaStore.Video.VideoColumns.MIME_TYPE,
+                            MediaStore.Video.VideoColumns.LATITUDE,
+                            MediaStore.Video.VideoColumns.LONGITUDE,
+                    };
+                    final Cursor cursorvideo = getContentResolver()
+                            .query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, videolist, null,
+                                    null, MediaStore.Video.VideoColumns.DATE_TAKEN + " DESC");
 
-                // Put it in the image view
-                if (cursorvideo.moveToFirst()) {
-                    videoTaken = cursorvideo.getString(cursorvideo.getColumnIndex(MediaStore.Video.VideoColumns.DATA));
-                    videoLat = cursorvideo.getString(cursorvideo.getColumnIndex(MediaStore.Video.VideoColumns.LATITUDE));
-                    videoLong = cursorvideo.getString(cursorvideo.getColumnIndex(MediaStore.Video.VideoColumns.LONGITUDE));
+                    // Put it in the image view
+                    if (cursorvideo.moveToFirst()) {
+                        videoTaken = cursorvideo.getString(cursorvideo.getColumnIndex(MediaStore.Video.VideoColumns.DATA));
+                        videoLat = cursorvideo.getString(cursorvideo.getColumnIndex(MediaStore.Video.VideoColumns.LATITUDE));
+                        videoLong = cursorvideo.getString(cursorvideo.getColumnIndex(MediaStore.Video.VideoColumns.LONGITUDE));
+                    }
+                    cursorvideo.close();
+
                     if (videoTaken != null) {
                         Intent videoPreview = new Intent(this, VideoPreviewActivity.class);
                         videoPreview.putExtra("video", videoTaken);
                         startActivityForResult(videoPreview, REQUEST_VIDEO_PREVIEW);
-
                     }
                 }
 
@@ -241,13 +251,14 @@ public class MediaPickerActivity extends Activity {
                             MediaItem item = new MediaItem();
                             LocationItem location = new LocationItem();
 
-                            item.Id = 0;
+                            item.Id = cursor.getCount();
                             item.RealUrl = "file://" + imageTaken;
                             item.Url = imageTaken;
                             item.ThumbUrl = imageTaken;
                             location.Lat = imageLat;
                             location.Lng = imageLong;
                             item.Location = location;
+                            item.IsChecked = true;
 
                             for (MediaItem selectedItem : mSelectedMediaList) {
                                 selectedItem.Id += 1;
@@ -267,20 +278,40 @@ public class MediaPickerActivity extends Activity {
 
             case REQUEST_VIDEO_PREVIEW:
                 if (resultCode == RESULT_OK) {
-                    MediaItem item = new MediaItem();
-                    LocationItem location = new LocationItem();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //Get latest image from gallery - Chien Nguyen
+                            Uri uri = android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                            String[] projection = {MediaStore.MediaColumns.DATA,
+                                    MediaStore.Video.Media.LATITUDE,
+                                    MediaStore.Video.Media.LONGITUDE,
+                                    MediaStore.Video.Media.DATE_ADDED};
 
-                    item.Id = 0;
-                    item.RealUrl = "file://" + videoTaken;
-                    item.Url = videoTaken;
-                    item.ThumbUrl = "";
-                    location.Lat = videoLat;
-                    location.Lng = videoLong;
-                    item.Location = location;
+                            final Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_MODIFIED + " DESC");
 
-                    mSelectedMediaList.add(item);
+                            // Put it in the image view
+                            assert cursor != null;
 
-                    new PrepareSendingData().execute();
+                            MediaItem item = new MediaItem();
+                            LocationItem location = new LocationItem();
+
+                            item.Id = cursor.getCount();
+                            item.RealUrl = "file://" + videoTaken;
+                            item.Url = videoTaken;
+                            item.ThumbUrl = "";
+                            location.Lat = videoLat;
+                            location.Lng = videoLong;
+                            item.Location = location;
+                            item.IsChecked = true;
+
+                            mSelectedMediaList.add(item);
+
+                            cursor.close();
+
+                            mHandler.sendEmptyMessage(0);
+                        }
+                    }).start();
 
                 } else {
                     new GetMediaFiles().execute();
@@ -289,18 +320,20 @@ public class MediaPickerActivity extends Activity {
                 break;
 
             case REQUEST_TAKE_PHOTO:
-//                galleryAddPic();
+                if (resultCode == RESULT_OK && !TextUtils.isEmpty(mCurrentPhotoPath)) {
+                    try {
+                        Utils.addImageToGallery(mCurrentPhotoPath.replace("file:/", ""), getApplicationContext());
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
-                try {
-                    Utils.addImageToGallery(mCurrentPhotoPath.replace("file:/", ""), getApplicationContext());
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    Intent photoPreview = new Intent(this, PhotoPreviewActivity.class);
+
+                    photoPreview.putExtra("picture", mCurrentPhotoPath);
+                    startActivityForResult(photoPreview, REQUEST_IMAGE_PREVIEW);
                 }
-
-                Intent photoPreview = new Intent(this, PhotoPreviewActivity.class);
-
-                photoPreview.putExtra("picture", mCurrentPhotoPath);
-                startActivityForResult(photoPreview, REQUEST_IMAGE_PREVIEW);
 
                 break;
         }
@@ -524,12 +557,12 @@ public class MediaPickerActivity extends Activity {
      */
     public void getAllShownVideosPath(Activity activity) {
 
+
         Uri uri = android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
         String[] projection = {MediaStore.MediaColumns.DATA,
                 MediaStore.Video.Media.LATITUDE,
                 MediaStore.Video.Media.LONGITUDE,
                 MediaStore.Video.Media.DATE_ADDED};
-
         runQuery(activity, uri, projection);
 
     }
@@ -544,6 +577,7 @@ public class MediaPickerActivity extends Activity {
         column_index_data = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
         while (cursor.moveToNext()) {
             absolutePathOfImage = cursor.getString(column_index_data);
+            Log.e(TAG, absolutePathOfImage);
 
             lat = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.LATITUDE));
             lng = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.LONGITUDE));
@@ -643,14 +677,16 @@ public class MediaPickerActivity extends Activity {
             Uri contentUri = Uri.fromFile(f);
             mediaScanIntent.setData(contentUri);
             this.sendBroadcast(mediaScanIntent);
-        }
-        else {
+        } else {
             sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse(mCurrentPhotoPath)));
         }
 
     }
 
     private void showActionDialog() {
+        if (mDialog != null) {
+            mDialog.dismiss();
+        }
         mDialog = new Dialog(MediaPickerActivity.this);
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setContentView(R.layout.layout_dialog_capture);
@@ -664,9 +700,13 @@ public class MediaPickerActivity extends Activity {
                 if (selected_photo >= max_photo) {
                     showWarningDialog(getString(R.string.txt_warning_photo).replace("#P", "" + max_photo));
                 } else {
-                    dispatchTakePictureIntent();
+                    if (selected_video > 0) {
+                        showWarningDialog(getString(R.string.txt_warning));
+                    } else {
+                        dispatchTakePictureIntent();
+                        mDialog.dismiss();
+                    }
                 }
-                mDialog.dismiss();
             }
         });
 
@@ -676,15 +716,19 @@ public class MediaPickerActivity extends Activity {
                 if (selected_video >= max_video) {
                     showWarningDialog(getString(R.string.txt_warning_video).replace("#V", "" + max_video));
                 } else {
-                    Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                    takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
-                    takePictureIntent.putExtra("EXTRA_VIDEO_QUALITY", 1);//Set quality when record video
-                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                        startActivityForResult(takePictureIntent, REQUEST_VIDEO_CAPTURE);
+                    if (selected_photo > 0) {
+                        showWarningDialog(getString(R.string.txt_warning));
+                    } else {
+                        Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                        takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
+                        takePictureIntent.putExtra("EXTRA_VIDEO_QUALITY", 1);//Set quality when record video
+                        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                            startActivityForResult(takePictureIntent, REQUEST_VIDEO_CAPTURE);
+                        }
+
+                        mDialog.dismiss();
                     }
                 }
-
-                mDialog.dismiss();
             }
         });
 
@@ -692,6 +736,9 @@ public class MediaPickerActivity extends Activity {
     }
 
     private void showWarningDialog(String message) {
+        if (mDialog != null) {
+            mDialog.dismiss();
+        }
         mDialog = new Dialog(MediaPickerActivity.this);
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setContentView(R.layout.layout_dialog_warning);
@@ -734,8 +781,9 @@ public class MediaPickerActivity extends Activity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            if (mMediaList != null)
+            if (mMediaList != null) {
                 mMediaList.clear();
+            }
 
             // Pre setup media list to have first item as Capture button
             MediaItem fakeItem = new MediaItem();

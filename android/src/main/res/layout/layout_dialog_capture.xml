@@ -12,7 +12,7 @@
         android:padding="20dp"
         android:background="@color/bg_hunterslog"
         android:text="@string/txt_select_capture_mode"
-        android:textColor="@android:color/white"/>
+        android:textColor="@android:color/white" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,12 +27,12 @@
             android:layout_height="wrap_content"
             android:text="@string/txt_photo_mode"
             android:textColor="@android:color/black"
-            android:padding="10dp"/>
+            android:padding="10dp" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="3dp"
-            android:background="@android:color/darker_gray"/>
+            android:background="@android:color/darker_gray" />
 
 
         <RadioButton
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:text="@string/txt_video_mode"
             android:textColor="@android:color/black"
-            android:padding="10dp"/>
+            android:padding="10dp" />
 
     </LinearLayout>
 
