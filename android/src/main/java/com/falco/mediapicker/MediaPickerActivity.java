@@ -386,7 +386,7 @@ public class MediaPickerActivity extends Activity {
                     item.IsChecked = false;
 
                     int i = 0;
-                    while (mSelectedMediaList.size() > 0) {
+                    while (i < mSelectedMediaList.size()) {
                         if (item.Id == mSelectedMediaList.get(i).Id) {
                             mSelectedMediaList.remove(i);
                             break;
