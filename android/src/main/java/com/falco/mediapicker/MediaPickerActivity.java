@@ -780,11 +780,15 @@ public class MediaPickerActivity extends Activity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
             if (mMediaList != null) {
                 mMediaList.clear();
             } else {
                 mMediaList = new ArrayList<>();
             }
+
+            if (mSelectedMediaList == null)
+                mSelectedMediaList = new ArrayList<>();
 
             // Pre setup media list to have first item as Capture button
             MediaItem fakeItem = new MediaItem();
