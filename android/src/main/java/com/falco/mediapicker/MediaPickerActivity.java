@@ -180,6 +180,10 @@ public class MediaPickerActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (mMediaList == null)
+            mMediaList = new ArrayList<>();
+        if (mSelectedMediaList == null)
+            mSelectedMediaList = new ArrayList<>();
 
         requestPermissions();
     }
