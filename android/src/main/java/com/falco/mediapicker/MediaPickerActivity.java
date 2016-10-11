@@ -133,9 +133,16 @@ public class MediaPickerActivity extends Activity {
                         Log.e(TAG, "" + item.Id);
                         mSelectedMediaList.add(item);
 
-                        if (item.RealUrl.toLowerCase().contains("mp4"))
+                        if (item.RealUrl.toLowerCase().contains("mp4") ||
+                                item.RealUrl.toLowerCase().contains("m4v") ||
+                                item.RealUrl.toLowerCase().contains("mov") ||
+                                item.RealUrl.toLowerCase().contains("3gp"))
                             selected_video++;
-                        else
+
+                        if (item.RealUrl.toLowerCase().contains("jpg") ||
+                                item.RealUrl.toLowerCase().contains("png") ||
+                                item.RealUrl.toLowerCase().contains("jpeg") ||
+                                item.RealUrl.toLowerCase().contains("gif"))
                             selected_photo++;
                     }
                 }
@@ -592,8 +599,8 @@ public class MediaPickerActivity extends Activity {
             lng = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.LONGITUDE));
 
             LocationItem location = new LocationItem();
-            location.Lat = lat;
-            location.Lng = lng;
+            location.Lat = TextUtils.isEmpty(lat) ? "0" : lat;
+            location.Lng = TextUtils.isEmpty(lng) ? "0" : lng;;
 
             MediaItem item = new MediaItem();
             item.Id = mMediaList.size();
@@ -612,12 +619,28 @@ public class MediaPickerActivity extends Activity {
 
         for (MediaItem item : mSelectedMediaList) {
             if (item != null) {
-                for (MediaItem originItem : mMediaList) {
-                    if (originItem != null &&
-                            originItem.RealUrl != null &&
-                            originItem.RealUrl.equals(item.RealUrl)) {
-                        originItem.IsChecked = item.IsChecked;
-                        break;
+                if (item.RealUrl.toLowerCase().contains("http") ||
+                        item.RealUrl.toLowerCase().contains("https")) {
+
+                    MediaItem itemFromServer = new MediaItem();
+                    itemFromServer.Id = mMediaList.size();
+                    itemFromServer.RealUrl = item.RealUrl;
+                    itemFromServer.Url = item.Url;
+                    itemFromServer.ThumbUrl = item.ThumbUrl;
+                    itemFromServer.Location = item.Location;
+                    itemFromServer.Created_At = String.valueOf(System.currentTimeMillis());
+                    itemFromServer.IsChecked = true;
+
+                    mMediaList.add(1, itemFromServer);
+
+                } else {
+                    for (MediaItem originItem : mMediaList) {
+                        if (originItem != null &&
+                                originItem.RealUrl != null &&
+                                originItem.RealUrl.equals(item.RealUrl)) {
+                            originItem.IsChecked = item.IsChecked;
+                            break;
+                        }
                     }
                 }
             }
@@ -857,7 +880,14 @@ public class MediaPickerActivity extends Activity {
         @Override
         protected String doInBackground(Void... voids) {
             for (MediaItem item : mSelectedMediaList) {
-                if (item.RealUrl.toLowerCase().contains("mp4")) {
+                if (item.RealUrl.toLowerCase().contains("http") || item.RealUrl.toLowerCase().contains("https")) {
+                    continue;
+                }
+
+                if (item.RealUrl.toLowerCase().contains("mp4") ||
+                        item.RealUrl.toLowerCase().contains("m4v") ||
+                        item.RealUrl.toLowerCase().contains("mov") ||
+                        item.RealUrl.toLowerCase().contains("3gp")) {
                     Bitmap thumbBit = ThumbnailUtils.createVideoThumbnail(item.Url.replace("file://", ""), MediaStore.Video.Thumbnails.MICRO_KIND);
 
                     item.ThumbUrl = "file://" + Utils.saveImage(getApplicationContext(), thumbBit, "thumb_" + item.Url);
@@ -874,7 +904,12 @@ public class MediaPickerActivity extends Activity {
                         e.printStackTrace();
                     }
 
-                } else {
+                }
+
+                if (item.RealUrl.toLowerCase().contains("jpg") ||
+                        item.RealUrl.toLowerCase().contains("jpeg") ||
+                        item.RealUrl.toLowerCase().contains("png") ||
+                        item.RealUrl.toLowerCase().contains("gif")) {
 
                     Bitmap matrixBitmap = Utils.rotaionImage(item.RealUrl.replace("file://", ""));
                     int scaleW = matrixBitmap.getWidth(), scaleH = matrixBitmap.getHeight();
@@ -958,7 +993,10 @@ public class MediaPickerActivity extends Activity {
                 boolean isPhoto = true;
 
                 if (item != null) {
-                    if (item.RealUrl.toLowerCase().contains("mp4"))
+                    if (item.RealUrl.toLowerCase().contains("mp4") ||
+                            item.RealUrl.toLowerCase().contains("mov") ||
+                            item.RealUrl.toLowerCase().contains("m4v") ||
+                            item.RealUrl.toLowerCase().contains("3gp"))
                         isPhoto = false;
 
                     convertView = li.inflate(R.layout.layout_photo, null);
@@ -973,12 +1011,23 @@ public class MediaPickerActivity extends Activity {
                     imgView.setTag(item.Url);
 
                     if (isPhoto) {
-                        picassoInstance.load(item.RealUrl)
-                                .resize(100, 100)
-                                .centerCrop()
-                                .into(imgView);
+                        if (item.RealUrl.toLowerCase().contains("http") || item.RealUrl.toLowerCase().contains("https")) {
+                            picassoInstance.with(getApplicationContext())
+                                    .load(Uri.parse(item.RealUrl))
+                                    .resize(100, 100)
+                                    .centerCrop()
+                                    .into(imgView);
+                        } else {
+                            picassoInstance.with(getApplicationContext())
+                                    .load(item.RealUrl)
+                                    .resize(100, 100)
+                                    .centerCrop()
+                                    .into(imgView);
+                        }
+
+
                     } else {
-                        picassoInstance.load(VideoRequestHandler.SCHEME_VIEDEO + ":" + item.RealUrl.replace("file://", ""))
+                        picassoInstance.load(VideoRequestHandler.SCHEME_VIEDEO + ":" + ((item.RealUrl.toLowerCase().contains("file://")) ? item.RealUrl.replace("file://", "") : item.RealUrl))
                                 .resize(100, 100)
                                 .centerCrop()
                                 .into(imgView);
