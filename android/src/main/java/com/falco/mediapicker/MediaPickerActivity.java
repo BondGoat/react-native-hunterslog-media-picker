@@ -122,11 +122,15 @@ public class MediaPickerActivity extends Activity {
             if (receivedIntent.hasExtra(MEDIA_RESULT)) {
                 String jsonArr = receivedIntent.getStringExtra(MEDIA_RESULT);
 
+                Log.e(TAG, "RECEIVED: " + jsonArr);
+
                 Gson gson = new Gson();
                 MediaItem[] mediaList = gson.fromJson(jsonArr, MediaItem[].class);
 
                 if (mSelectedMediaList == null)
                     mSelectedMediaList = new ArrayList<>();
+                else
+                    mSelectedMediaList.clear();
 
                 if (mediaList != null && mediaList.length > 0) {
                     for (MediaItem item : mediaList) {
