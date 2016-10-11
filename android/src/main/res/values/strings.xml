@@ -6,7 +6,7 @@
     <string name="txt_add">ADD</string>
     <string name="txt_warning">Only 1 type of media is allowed in a Post</string>
     <string name="txt_warning_video">The maximum number of video is #V</string>
-    <string name="txt_warning_photo">The maximum number of pictures are #P</string>
+    <string name="txt_warning_photo">The maximum number of pictures is #P</string>
     <string name="txt_select_capture_mode">NEXT ACTION:</string>
     <string name="txt_photo_mode">Take a Photo</string>
     <string name="txt_video_mode">Capture a Video</string>
