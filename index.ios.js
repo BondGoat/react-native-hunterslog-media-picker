@@ -40,6 +40,10 @@ export default class MediaHunterslogPicker extends Component {
     this.props.onSelectedImages(currentImage);
   }
 
+  _goToCamera() {
+    this.props.onGoToCamera();
+  }
+
   render() {
     return (
       <View style={{flex: 1}}>
@@ -56,6 +60,7 @@ export default class MediaHunterslogPicker extends Component {
               <Image style={styles.marker} source={require('./img/ico_checked.png')}/>
             </View>
           }
+          onGoToCamera={this._goToCamera.bind(this)}
         />
 
       </View>
