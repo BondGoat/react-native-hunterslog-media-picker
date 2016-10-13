@@ -1,0 +1,25 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "62e051ae-ede0-4b1a-b3f5-3cd250446558++1367",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "62e051ae-ede0-4b1a-b3f5-3cd250446558++1367" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "62e051ae-ede0-4b1a-b3f5-3cd250446558++1367" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "9E36CA05-9C22-4DFB-BBA9-96B9ACD3C15A",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "62e051ae-ede0-4b1a-b3f5-3cd250446558++1367" : "HuntersLog\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "RNCamera",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "SourceCode\/Front-end\/Develop\/BondNguyen\/HuntersLog4\/node_modules\/react-native-hunterslog-media-picker\/ios\/RNCamera.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/dcsvn.tma.com.vn\/svn\/DC5SVN",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "62e051ae-ede0-4b1a-b3f5-3cd250446558++1367"
+    }
+  ]
+}

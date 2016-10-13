@@ -24,8 +24,9 @@ or link manually like so:
 ### iOS
 - Libraries need to be added to XCode, [follow direction at here](https://facebook.github.io/react-native/docs/linking-libraries-ios.html):
   - RCTImageResizer in ./ios
+  - RNCamera in ./ios
   - RTCCameraRoll in ./node_modules/react-native/Libraries
-  - RNAssetThumbnail in node_modules/react-native-asset-thumbnail
+  - RNAssetThumbnail in node_modules/react-native-asset-thumbnail  
 - Insert this to Info.plist
 ```Info.plist
 <key>NSPhotoLibraryUsageDescription</key>

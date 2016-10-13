@@ -98,6 +98,15 @@ class CameraRollPicker extends Component {
       // Add fake item to create Camera icon at the top
       listData.splice(0,0,item);
 
+      var selectedImages = this.state.selected;
+      for(var i = 0; i < selectedImages.length; i++) {
+        if (!selectedImages[i] &&
+          (selectedImages[i].image.uri.includes('http') ||
+            selectedImages[i].image.uri.includes('https'))) {
+          listData.splice(1,0,selectedImages[i]);
+        }
+      }
+
       newState.images = listData;
       newState.dataSource = this.state.dataSource.cloneWithRows(
         this._nEveryRow(newState.images, this.props.imagesPerRow)
@@ -127,7 +136,6 @@ class CameraRollPicker extends Component {
         duration: duration
       }
       tempDuration.push(item);
-      console.log("Duration list: " + JSON.stringify(tempDuration));
     }
   }
 
@@ -151,11 +159,11 @@ class CameraRollPicker extends Component {
   }
 
   _gotoCamera() {
-
+    this.props.onGoToCamera();
   }
 
   _renderPlayIcon(uri) {
-    if (uri.includes('m4v') || uri.includes('mp4') || uri.includes('mov')) {
+    if (uri.includes('Video')) {
       return (
         <View style={{height: this._imageSize, width: this._imageSize, justifyContent: 'center', alignItems: 'center'}}>
           <Image
@@ -206,7 +214,7 @@ class CameraRollPicker extends Component {
             resizeMode="stretch">
             <Image
               style={{height: this._imageSize, width: this._imageSize}} >
-              {this._renderPlayIcon(item.node.image.uri)}
+              {this._renderPlayIcon(item.node.type)}
               { (this._arrayObjectIndexOf(this.state.selected, item.node.image.uri) >= 0) ? marker : null }
             </Image>
           </Video>
@@ -222,7 +230,6 @@ class CameraRollPicker extends Component {
         <Image
           source={{uri: item.node.image.uri}}
           style={{height: this._imageSize, width: this._imageSize}} >
-          {this._renderPlayIcon(item.node.image.uri)}
           { (this._arrayObjectIndexOf(this.state.selected, item.node.image.uri) >= 0) ? marker : null }
         </Image>
       </TouchableOpacity>
@@ -266,7 +273,7 @@ class CameraRollPicker extends Component {
     if (index >= 0) {
       imageNode.duration = tempDuration[index].duration;
     }
-    this.props.callback(imageNode);
+    this.props.onSelectedImages(imageNode);
   }
 
   _nEveryRow(data, n) {
@@ -294,7 +301,7 @@ class CameraRollPicker extends Component {
   _arrayObjectIndexOf(array, value) {
     var index = -1;
     for (var i = 0; i < array.length; i++) {
-      if (array[i].image.uri === value) {
+      if (array[i] != null && array[i].image.uri == value) {
         return i;
       }
     }

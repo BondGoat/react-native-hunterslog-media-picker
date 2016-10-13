@@ -4,15 +4,15 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>RCTImageResizer.xcscheme</key>
+		<key>RNCamera.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>2</integer>
+			<integer>1</integer>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>5D72D2E71C16249000E22EC1</key>
+		<key>84BF5DA01DACD8C2004F420B</key>
 		<dict>
 			<key>primary</key>
 			<true/>
