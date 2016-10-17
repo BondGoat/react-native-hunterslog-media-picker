@@ -4,10 +4,16 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by Admin on 9/19/16.
@@ -21,8 +27,7 @@ public class PhotoPreviewActivity extends Activity {
     Button btnBack, btnUse;
     String mCurrentPhotoPath;
 
-    public final String PHOTO_PATH = "PHOTO_PATH";
-    public final int REQUEST_IMAGE_PREVIEW = 4;
+    public final int REQUEST_TAKE_PHOTO = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,13 +63,18 @@ public class PhotoPreviewActivity extends Activity {
     private View.OnClickListener backListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            finish();
+            if (!TextUtils.isEmpty(mCurrentPhotoPath))
+                Utils.deleteFile(mCurrentPhotoPath);
+
+            dispatchTakePictureIntent();
         }
     };
 
     private View.OnClickListener useListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            Utils.deleteFile(mCurrentPhotoPath);
+
             Intent intent = new Intent();
             intent.putExtra("imageTaken", mCurrentPhotoPath);
             setResult(RESULT_OK, intent);
@@ -72,47 +82,44 @@ public class PhotoPreviewActivity extends Activity {
         }
     };
 
-    private void showWaitingDialog() {
-        if (mProgressDialog == null) {
-            mProgressDialog = new ProgressDialog(PhotoPreviewActivity.this);
-            mProgressDialog.setMessage(getString(R.string.txt_loading));
-            mProgressDialog.setCancelable(false);
-        }
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile;
+            try {
+                photoFile = Utils.createImageFile(this);
+                mCurrentPhotoPath = "file:" + photoFile.getAbsolutePath();
 
-        mProgressDialog.show();
+                // Continue only if the File was successfully created
+                if (!photoFile.exists()) {
+                    photoFile.mkdirs();
+                }
+
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        getPackageName() + ".fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private void hideWaitingDialog() {
-        if (mProgressDialog != null) {
-            mProgressDialog.dismiss();
-        }
-    }
-
-    class WriteBitmapToFile extends AsyncTask<Void, Void, String> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            showWaitingDialog();
-        }
-
-        @Override
-        protected String doInBackground(Void... voids) {
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-
-            hideWaitingDialog();
-
-            Intent data = new Intent();
-            data.putExtra(PHOTO_PATH, s);
-
-            setResult(REQUEST_IMAGE_PREVIEW, data);
-            finish();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_TAKE_PHOTO:
+                if (resultCode == RESULT_OK && !TextUtils.isEmpty(mCurrentPhotoPath)) {
+                    bitmapPhotoPreview = Utils.rotaionImage(mCurrentPhotoPath.replace("file:/", ""));
+                    if (bitmapPhotoPreview != null && !bitmapPhotoPreview.isRecycled())
+                        imgPreview.setImageBitmap(bitmapPhotoPreview);
+                }
+                break;
         }
     }
 }

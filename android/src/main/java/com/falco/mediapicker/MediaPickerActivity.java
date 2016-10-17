@@ -13,9 +13,7 @@ import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -23,9 +21,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,15 +40,12 @@ import com.google.gson.Gson;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -63,7 +58,7 @@ public class MediaPickerActivity extends Activity {
     GridView gridMedia;
     Button btnBack, btnAdd;
     ImageAdapter imageAdapter;
-    int max_photo = 10, max_video = 1, max_video_duration = 30;
+    int max_photo = 10, max_video = 1, max_video_duration = 10;
     int selected_photo = 0, selected_video = 0;
     Dialog mDialog;
     String mCurrentPhotoPath;
@@ -78,29 +73,6 @@ public class MediaPickerActivity extends Activity {
     public static List<MediaItem> mSelectedMediaList = new ArrayList<>();
     public static List<MediaItem> mMediaList = new ArrayList<>();
 
-    // Permission list request code
-    public final static int READ_EXTERNAL_STORAGE = 0;
-    public final static int WRITE_EXTERNAL_STORAGE = 1;
-    // --------------------------
-
-    // Config value
-    public final String MAX_UPLOADABLE_PHOTO = "MAX_UPLOADABLE_PHOTO";
-    public final String MAX_UPLOADABLE_VIDEO = "MAX_UPLOADABLE_VIDEO";
-    public final String MAX_UPLOADABLE_VIDEO_DURATION = "MAX_UPLOADABLE_VIDEO_DURATION";
-    public final static int MEDIA_RESULT_CODE = 0;
-    public final static String MEDIA_RESULT = "MEDIA_RESULT";
-    public final static int MAX_SCALED_SIZE = 500;
-    // --------------------------
-
-    // Camera intent
-    public final int REQUEST_IMAGE_CAPTURE = 2;
-    public final int REQUEST_VIDEO_CAPTURE = REQUEST_IMAGE_CAPTURE + 1;
-    public final int REQUEST_IMAGE_PREVIEW = REQUEST_VIDEO_CAPTURE + 1;
-    public final int REQUEST_VIDEO_PREVIEW = REQUEST_IMAGE_PREVIEW + 1;
-    public final int REQUEST_TAKE_PHOTO = REQUEST_VIDEO_PREVIEW + 1;
-
-    // --------------------------
-
     public final String TAG = MediaPickerActivity.this.getClass().getSimpleName();
 
     boolean isReadExternalStoragePermissionAccepted = false;
@@ -113,16 +85,14 @@ public class MediaPickerActivity extends Activity {
 
         Intent receivedIntent = getIntent();
         if (receivedIntent != null) {
-            if (receivedIntent.hasExtra(MAX_UPLOADABLE_PHOTO))
-                max_photo = receivedIntent.getIntExtra(MAX_UPLOADABLE_PHOTO, 10);
-            if (receivedIntent.hasExtra(MAX_UPLOADABLE_VIDEO))
-                max_video = receivedIntent.getIntExtra(MAX_UPLOADABLE_VIDEO, 1);
-            if (receivedIntent.hasExtra(MAX_UPLOADABLE_VIDEO_DURATION))
-                max_video_duration = receivedIntent.getIntExtra(MAX_UPLOADABLE_VIDEO_DURATION, 10);
-            if (receivedIntent.hasExtra(MEDIA_RESULT)) {
-                String jsonArr = receivedIntent.getStringExtra(MEDIA_RESULT);
-
-                Log.e(TAG, "RECEIVED: " + jsonArr);
+            if (receivedIntent.hasExtra(Constants.MAX_UPLOADABLE_PHOTO))
+                max_photo = receivedIntent.getIntExtra(Constants.MAX_UPLOADABLE_PHOTO, 10);
+            if (receivedIntent.hasExtra(Constants.MAX_UPLOADABLE_VIDEO))
+                max_video = receivedIntent.getIntExtra(Constants.MAX_UPLOADABLE_VIDEO, 1);
+            if (receivedIntent.hasExtra(Constants.MAX_UPLOADABLE_VIDEO_DURATION))
+                max_video_duration = receivedIntent.getIntExtra(Constants.MAX_UPLOADABLE_VIDEO_DURATION, 10);
+            if (receivedIntent.hasExtra(Constants.MEDIA_RESULT)) {
+                String jsonArr = receivedIntent.getStringExtra(Constants.MEDIA_RESULT);
 
                 Gson gson = new Gson();
                 MediaItem[] mediaList = gson.fromJson(jsonArr, MediaItem[].class);
@@ -175,6 +145,15 @@ public class MediaPickerActivity extends Activity {
             @Override
             public void onClick(View view) {
                 finish();
+
+                if (mMediaList != null) {
+                    mMediaList.clear();
+                    mMediaList = null;
+                }
+                if (mSelectedMediaList != null) {
+                    mSelectedMediaList.clear();
+                    mSelectedMediaList = null;
+                }
             }
         });
 
@@ -202,12 +181,12 @@ public class MediaPickerActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-            case REQUEST_IMAGE_CAPTURE:
+            case Constants.REQUEST_IMAGE_CAPTURE:
                 dispatchTakePictureIntent();
 
                 break;
 
-            case REQUEST_VIDEO_CAPTURE:
+            case Constants.REQUEST_VIDEO_CAPTURE:
                 if (data != null) {
                     String[] videolist = new String[]{
                             MediaStore.Video.VideoColumns._ID,
@@ -233,17 +212,26 @@ public class MediaPickerActivity extends Activity {
                     if (videoTaken != null) {
                         Intent videoPreview = new Intent(this, VideoPreviewActivity.class);
                         videoPreview.putExtra("video", videoTaken);
-                        startActivityForResult(videoPreview, REQUEST_VIDEO_PREVIEW);
+                        videoPreview.putExtra(Constants.MAX_UPLOADABLE_VIDEO_DURATION, max_video_duration);
+                        startActivityForResult(videoPreview, Constants.REQUEST_VIDEO_PREVIEW);
                     }
                 }
 
                 break;
 
-            case REQUEST_IMAGE_PREVIEW:
+            case Constants.REQUEST_IMAGE_PREVIEW:
                 if (resultCode == RESULT_OK) {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
+                            try {
+                                Utils.addImageToGallery(mCurrentPhotoPath.replace("file:/", ""), getApplicationContext());
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
                             //Get latest image from gallery - Chien Nguyen
                             Uri uri = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                             String[] projection = {MediaStore.MediaColumns.DATA,
@@ -291,7 +279,7 @@ public class MediaPickerActivity extends Activity {
                 }
                 break;
 
-            case REQUEST_VIDEO_PREVIEW:
+            case Constants.REQUEST_VIDEO_PREVIEW:
                 if (resultCode == RESULT_OK) {
                     new Thread(new Runnable() {
                         @Override
@@ -338,24 +326,32 @@ public class MediaPickerActivity extends Activity {
 
                 break;
 
-            case REQUEST_TAKE_PHOTO:
+            case Constants.REQUEST_TAKE_PHOTO:
                 if (resultCode == RESULT_OK && !TextUtils.isEmpty(mCurrentPhotoPath)) {
-                    try {
-                        Utils.addImageToGallery(mCurrentPhotoPath.replace("file:/", ""), getApplicationContext());
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
 
                     Intent photoPreview = new Intent(this, PhotoPreviewActivity.class);
 
                     photoPreview.putExtra("picture", mCurrentPhotoPath);
-                    startActivityForResult(photoPreview, REQUEST_IMAGE_PREVIEW);
+                    startActivityForResult(photoPreview, Constants.REQUEST_IMAGE_PREVIEW);
                 }
 
                 break;
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (mMediaList != null) {
+                mMediaList.clear();
+                mMediaList = null;
+            }
+            if (mSelectedMediaList != null) {
+                mSelectedMediaList.clear();
+                mSelectedMediaList = null;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     private android.os.Handler mHandler = new android.os.Handler() {
@@ -460,7 +456,7 @@ public class MediaPickerActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case READ_EXTERNAL_STORAGE:
+            case Constants.READ_EXTERNAL_STORAGE:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -475,7 +471,7 @@ public class MediaPickerActivity extends Activity {
                 }
                 break;
 
-            case WRITE_EXTERNAL_STORAGE:
+            case Constants.WRITE_EXTERNAL_STORAGE:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -499,8 +495,8 @@ public class MediaPickerActivity extends Activity {
      * Request for each permission
      */
     private void requestPermissions() {
-        requestPermission(READ_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE);
-        requestPermission(WRITE_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        requestPermission(Constants.READ_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE);
+        requestPermission(Constants.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
     /**
@@ -651,31 +647,6 @@ public class MediaPickerActivity extends Activity {
         }
     }
 
-    private String getStringImage(Bitmap bmp) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] imageBytes = baos.toByteArray();
-        return Base64.encodeToString(imageBytes, Base64.DEFAULT);
-    }
-
-    private File createImageFile() throws IOException {
-        Log.v(TAG, "SAVING PHOTO");
-
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-        return image;
-    }
-
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
@@ -683,7 +654,8 @@ public class MediaPickerActivity extends Activity {
             // Create the File where the photo should go
             File photoFile;
             try {
-                photoFile = createImageFile();
+                photoFile = Utils.createImageFile(this);
+                mCurrentPhotoPath = "file:" + photoFile.getAbsolutePath();
 
                 Log.v(TAG, "SAVING VIA INTENT");
 
@@ -696,7 +668,7 @@ public class MediaPickerActivity extends Activity {
                         getPackageName() + ".fileprovider",
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                startActivityForResult(takePictureIntent, Constants.REQUEST_TAKE_PHOTO);
             } catch (IOException ex) {
                 ex.printStackTrace();
             } catch (Exception e) {
@@ -705,20 +677,13 @@ public class MediaPickerActivity extends Activity {
         }
     }
 
-    private void galleryAddPic() {
-        Log.v(TAG, "ADD TO GALLERY " + mCurrentPhotoPath);
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            File f = new File(mCurrentPhotoPath);
-            Uri contentUri = Uri.fromFile(f);
-            mediaScanIntent.setData(contentUri);
-            this.sendBroadcast(mediaScanIntent);
-        } else {
-            sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse(mCurrentPhotoPath)));
+    private void dispatchCaptureVideoIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+        takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
+        takePictureIntent.putExtra("EXTRA_VIDEO_QUALITY", 1);//Set quality when record video
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, Constants.REQUEST_VIDEO_CAPTURE);
         }
-
     }
 
     private void showActionDialog() {
@@ -745,16 +710,8 @@ public class MediaPickerActivity extends Activity {
         btnVideo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
-                takePictureIntent.putExtra("EXTRA_VIDEO_QUALITY", 1);//Set quality when record video
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivityForResult(takePictureIntent, REQUEST_VIDEO_CAPTURE);
-                }
-
+                dispatchCaptureVideoIntent();
                 mDialog.dismiss();
-
             }
         });
 
@@ -918,9 +875,9 @@ public class MediaPickerActivity extends Activity {
                     Bitmap matrixBitmap = Utils.rotaionImage(item.RealUrl.replace("file://", ""));
                     int scaleW = matrixBitmap.getWidth(), scaleH = matrixBitmap.getHeight();
 
-                    if (scaleW > MAX_SCALED_SIZE) {
-                        scaleW = MAX_SCALED_SIZE;
-                        scaleH = (MAX_SCALED_SIZE * matrixBitmap.getHeight()) / matrixBitmap.getWidth();
+                    if (scaleW > Constants.MAX_SCALED_SIZE) {
+                        scaleW = Constants.MAX_SCALED_SIZE;
+                        scaleH = (Constants.MAX_SCALED_SIZE * matrixBitmap.getHeight()) / matrixBitmap.getWidth();
                     }
 
                     Bitmap scaledBitmap = Bitmap.createScaledBitmap(matrixBitmap, scaleW, scaleH, true);
@@ -946,9 +903,9 @@ public class MediaPickerActivity extends Activity {
 
             if (s != null) {
                 Intent data = new Intent();
-                data.putExtra(MEDIA_RESULT, s);
+                data.putExtra(Constants.MEDIA_RESULT, s);
 
-                setResult(MEDIA_RESULT_CODE, data);
+                setResult(Constants.MEDIA_RESULT_CODE, data);
 
                 if (mMediaList != null) {
                     mMediaList.clear();
