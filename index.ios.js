@@ -48,7 +48,6 @@ export default class MediaHunterslogPicker extends Component {
     return (
       <View style={{flex: 1}}>
         <CameraRollPicker
-          callback={this._getSelectedImages.bind(this)}
           groupTypes='All'
           assetType='All'
           selected={this.props.selectedImages}
@@ -61,6 +60,7 @@ export default class MediaHunterslogPicker extends Component {
             </View>
           }
           onGoToCamera={this._goToCamera.bind(this)}
+          onSelectedImages={this._getSelectedImages.bind(this)}
         />
 
       </View>

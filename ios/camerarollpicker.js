@@ -100,10 +100,10 @@ class CameraRollPicker extends Component {
 
       var selectedImages = this.state.selected;
       for(var i = 0; i < selectedImages.length; i++) {
-        if (!selectedImages[i] &&
-          (selectedImages[i].image.uri.includes('http') ||
-            selectedImages[i].image.uri.includes('https'))) {
-          listData.splice(1,0,selectedImages[i]);
+        if (selectedImages[i].image.uri.indexOf('http') >= 0 ||
+            selectedImages[i].image.uri.indexOf('https') >= 0) {
+          var item = {node: selectedImages[i]};
+          listData.splice(1,0,item);
         }
       }
 
@@ -145,6 +145,7 @@ class CameraRollPicker extends Component {
       <View
         style={[styles.wrapper, {padding: imageMargin, paddingRight: 0, backgroundColor: backgroundColor},]}>
         <ListView
+          enableEmptySections={true}
           style={{flex: 1,}}
           scrollRenderAheadDistance={scrollRenderAheadDistance}
           initialListSize={initialListSize}
