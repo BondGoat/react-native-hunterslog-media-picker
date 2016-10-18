@@ -68,6 +68,8 @@ RCT_EXPORT_METHOD(showCamera: (int) maxVideoDuration
         callback(@[@"OK"]);
     }
     
+    _videoURL = nil;
+    _videoController = nil;
 }
 
 
@@ -75,6 +77,8 @@ RCT_EXPORT_METHOD(showCamera: (int) maxVideoDuration
     
     [picker dismissViewControllerAnimated:YES completion:NULL];
     
+    _videoURL = nil;
+    _videoController = nil;
 }
 
 - (void)videoPlayBackDidFinish:(NSNotification *)notification {
