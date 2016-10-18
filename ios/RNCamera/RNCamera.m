@@ -32,7 +32,9 @@ RCT_EXPORT_METHOD(showCamera: (int) maxVideoDuration
         picker.mediaTypes = [[NSArray alloc] initWithObjects: (NSString *) kUTTypeMovie, (NSString *)kUTTypeImage, nil];
         
         AppDelegate *delegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-        [delegate.window.rootViewController presentViewController:picker animated:YES completion:NULL];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [delegate.window.rootViewController presentViewController:picker animated:YES completion:NULL];
+        });
     }
 }
 
