@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 
@@ -58,6 +59,19 @@ public class PhotoPreviewActivity extends Activity {
 
         if (bitmapPhotoPreview != null)
             bitmapPhotoPreview.recycle();
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (!TextUtils.isEmpty(mCurrentPhotoPath))
+                Utils.deleteFile(mCurrentPhotoPath);
+
+            dispatchTakePictureIntent();
+
+            return true;
+        }
+        return false;
     }
 
     private View.OnClickListener backListener = new View.OnClickListener() {

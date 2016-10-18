@@ -7,6 +7,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -51,9 +52,10 @@ public class VideoPreviewActivity extends Activity {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 videoPreview.seekTo(50);
-                btnplay.setVisibility(View.VISIBLE);
+//                btnplay.setVisibility(View.VISIBLE);
             }
         });
+
 
         btnplay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,6 +64,20 @@ public class VideoPreviewActivity extends Activity {
                 btnplay.setVisibility(View.INVISIBLE);
             }
         });
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (videoPreview.isPlaying()) {
+                videoPreview.stopPlayback();
+//                btnplay.setVisibility(View.VISIBLE);
+            }
+            dispatchCaptureVideoIntent();
+
+            return true;
+        }
+        return false;
     }
 
     private void dispatchCaptureVideoIntent() {
@@ -79,7 +95,7 @@ public class VideoPreviewActivity extends Activity {
         public void onClick(View view) {
             if (videoPreview.isPlaying()) {
                 videoPreview.stopPlayback();
-                btnplay.setVisibility(View.VISIBLE);
+//                btnplay.setVisibility(View.VISIBLE);
             }
             dispatchCaptureVideoIntent();
         }
