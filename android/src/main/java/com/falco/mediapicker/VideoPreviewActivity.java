@@ -7,6 +7,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -70,7 +71,7 @@ public class VideoPreviewActivity extends Activity {
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (videoPreview.isPlaying()) {
-                videoPreview.stopPlayback();
+                videoPreview.pause();
 //                btnplay.setVisibility(View.VISIBLE);
             }
             dispatchCaptureVideoIntent();
@@ -94,7 +95,7 @@ public class VideoPreviewActivity extends Activity {
         @Override
         public void onClick(View view) {
             if (videoPreview.isPlaying()) {
-                videoPreview.stopPlayback();
+                videoPreview.pause();
 //                btnplay.setVisibility(View.VISIBLE);
             }
             dispatchCaptureVideoIntent();
