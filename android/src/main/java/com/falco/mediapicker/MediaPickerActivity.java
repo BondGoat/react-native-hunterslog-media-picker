@@ -630,6 +630,7 @@ public class MediaPickerActivity extends Activity {
                     itemFromServer.Location = item.Location;
                     itemFromServer.Created_At = String.valueOf(System.currentTimeMillis());
                     itemFromServer.IsChecked = true;
+                    itemFromServer.isTrophyAlbum = item.isTrophyAlbum;
 
                     mMediaList.add(1, itemFromServer);
 
