@@ -30,7 +30,7 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case MEDIA_RESULT_CODE:
                 if (data != null && data.hasExtra(MEDIA_RESULT)) {
