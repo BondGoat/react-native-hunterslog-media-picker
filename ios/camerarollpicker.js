@@ -11,7 +11,6 @@ import {
   ListView,
   ActivityIndicator,
 } from 'react-native';
-import Video from "react-native-video";
 
 var tempDuration = [];
 
@@ -201,28 +200,6 @@ class CameraRollPicker extends Component {
       );
     }
 
-    if (item.node.type.includes('Video')) {
-      return (
-        <TouchableOpacity
-          key={item.node.image.uri}
-          style={{marginBottom: imageMargin, marginRight: imageMargin}}
-          onPress={event => this._selectImage(item.node)}>
-          <Video
-            onLoad={(e) => this._onGetVideoDuration(item.node.image.uri, e.duration)}
-            source={{uri: item.node.image.uri}}
-            paused={true}
-            style={{height: this._imageSize, width: this._imageSize}}
-            resizeMode="stretch">
-            <Image
-              style={{height: this._imageSize, width: this._imageSize}} >
-              {this._renderPlayIcon(item.node.type)}
-              { (this._arrayObjectIndexOf(this.state.selected, item.node.image.uri) >= 0) ? marker : null }
-            </Image>
-          </Video>
-        </TouchableOpacity>
-      );
-    }
-
     return (
       <TouchableOpacity
         key={item.node.image.uri}
@@ -231,6 +208,7 @@ class CameraRollPicker extends Component {
         <Image
           source={{uri: item.node.image.uri}}
           style={{height: this._imageSize, width: this._imageSize}} >
+          {this._renderPlayIcon(item.node.type)}
           { (this._arrayObjectIndexOf(this.state.selected, item.node.image.uri) >= 0) ? marker : null }
         </Image>
       </TouchableOpacity>
