@@ -9,12 +9,12 @@
 #import <UIKit/UIKit.h>
 #import <MediaPlayer/MediaPlayer.h>
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <AVFoundation/AVFoundation.h>
+#import <AVFoundation/AVAsset.h>
+#include <stdlib.h>
 #import "RCTBridge.h"
 #import "AppDelegate.h"
 
 @interface RNCamera : UIViewController <RCTBridgeModule, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
-
-@property (strong, nonatomic) NSURL *videoURL;
-@property (strong, nonatomic) MPMoviePlayerController *videoController;
 
 @end
