@@ -688,7 +688,7 @@ public class MediaPickerActivity extends Activity {
     private void dispatchCaptureVideoIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
-        takePictureIntent.putExtra("EXTRA_VIDEO_QUALITY", 1);//Set quality when record video
+        takePictureIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);//Set quality when record video
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(takePictureIntent, Constants.REQUEST_VIDEO_CAPTURE);
         }
