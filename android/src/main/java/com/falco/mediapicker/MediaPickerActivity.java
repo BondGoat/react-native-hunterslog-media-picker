@@ -383,7 +383,10 @@ public class MediaPickerActivity extends Activity {
                 if (item.IsChecked) {
                     imgSelected.setVisibility(View.GONE);
 
-                    if (item.Url.toLowerCase().contains("mp4")) {
+                    if (item.Url.toLowerCase().contains("mp4") ||
+                            item.Url.toLowerCase().contains("mov") ||
+                            item.Url.toLowerCase().contains("3gp") ||
+                            item.Url.toLowerCase().contains("m4v")) {
                         selected_video--;
                     } else if (item.Url.toLowerCase().contains("png") ||
                             item.Url.toLowerCase().contains("jpg") ||
@@ -402,7 +405,8 @@ public class MediaPickerActivity extends Activity {
                         i++;
                     }
                 } else {
-                    if (item.Url.toLowerCase().contains("mp4") && selected_video < max_video) {
+                    if ((item.Url.toLowerCase().contains("mp4") || item.Url.toLowerCase().contains("mov") || item.Url.toLowerCase().contains("3gp") || item.Url.toLowerCase().contains("m4v"))
+                            && selected_video < max_video) {
 
                         // Case user already select photo then they select video
                         if (selected_photo > 0) {
@@ -433,7 +437,10 @@ public class MediaPickerActivity extends Activity {
                         item.IsChecked = true;
 
                     } else {
-                        if (item.Url.toLowerCase().contains("mp4"))
+                        if (item.Url.toLowerCase().contains("mp4") ||
+                                item.Url.toLowerCase().contains("mov") ||
+                                item.Url.toLowerCase().contains("3gp") ||
+                                item.Url.toLowerCase().contains("m4v"))
                             showWarningDialog(getString(R.string.txt_warning_video).replace("#V", "" + max_video));
                         else
                             showWarningDialog(getString(R.string.txt_warning_photo).replace("#P", "" + max_photo));
