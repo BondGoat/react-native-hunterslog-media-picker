@@ -810,18 +810,21 @@ public class MediaPickerActivity extends Activity {
             Collections.sort(mMediaList, new Comparator<MediaItem>() {
                 @Override
                 public int compare(MediaItem lhs, MediaItem rhs) {
-                    try {
-                        long lhTime = Long.parseLong(lhs.Created_At);
-                        long rhTime = Long.parseLong(rhs.Created_At);
+                    if (lhs.Created_At != null && rhs.Created_At != null) {
+                        try {
+                            long lhTime = Long.parseLong(lhs.Created_At);
+                            long rhTime = Long.parseLong(rhs.Created_At);
 
-                        if (lhTime > rhTime)
-                            return -1;
+                            if (lhTime > rhTime)
+                                return -1;
 
-                        if (lhTime < rhTime)
-                            return 1;
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                            if (lhTime < rhTime)
+                                return 1;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
+
                     return 0;
                 }
             });
