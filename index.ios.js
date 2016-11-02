@@ -48,6 +48,7 @@ export default class MediaHunterslogPicker extends Component {
     return (
       <View style={{flex: 1}}>
         <CameraRollPicker
+          groupTypes='SavedPhotos'
           assetType='All'
           selected={this.props.selectedImages}
           maximum={10}

@@ -11,12 +11,15 @@ import {
   ListView,
   ActivityIndicator,
 } from 'react-native';
+import Video from "react-native-video";
 
 var tempDuration = [];
 
 class CameraRollPicker extends Component {
   constructor(props) {
     super(props);
+
+    this.lastPhotoFetched = undefined; // Using `null` would crash ReactNative CameraRoll on iOS.
 
     this.state = {
       images: [],
@@ -55,13 +58,14 @@ class CameraRollPicker extends Component {
     }
   }
 
-  _fetch() {
+  _fetch(after) {
     var {groupTypes, assetType} = this.props;
 
     var fetchParams = {
-      first: 1000,
+      first: 18,
       groupTypes: groupTypes,
       assetType: assetType,
+      after,
     };
 
     if (Platform.OS === "android") {
@@ -73,8 +77,7 @@ class CameraRollPicker extends Component {
       fetchParams.after = this.state.lastCursor;
     }
 
-    CameraRoll.getPhotos(fetchParams)
-      .then((data) => this._appendImages(data), (e) => console.log(e));
+    CameraRoll.getPhotos(fetchParams, this._appendImages.bind(this), (e) => console.log(e));
   }
 
   _appendImages(data) {
@@ -90,20 +93,13 @@ class CameraRollPicker extends Component {
     if (assets.length > 0) {
       newState.lastCursor = data.page_info.end_cursor;
 
-      var listData = this.state.images.concat(assets);
-      var item = {
-        node : null
-      };
-      // Add fake item to create Camera icon at the top
-      listData.splice(0,0,item);
-
-      var selectedImages = this.state.selected;
-      for(var i = 0; i < selectedImages.length; i++) {
-        if (selectedImages[i].image.uri.indexOf('http') >= 0 ||
-            selectedImages[i].image.uri.indexOf('https') >= 0) {
-          var item = {node: selectedImages[i]};
-          listData.splice(1,0,item);
-        }
+      if (this.lastPhotoFetched === undefined) {
+        var listData = this.state.images.concat(assets);
+        var item = {
+          node : null
+        };
+        // Add fake item to create Camera icon at the top
+        listData.splice(0,0,item);
       }
 
       newState.images = listData;
@@ -113,6 +109,9 @@ class CameraRollPicker extends Component {
     }
 
     this.setState(newState);
+
+    if (listData.length)
+      this.lastPhotoFetched = listData[listData.length - 1].image.uri;
   }
 
   _arrayDurationIndexOf(uri) {
@@ -243,7 +242,7 @@ class CameraRollPicker extends Component {
 
   _onEndReached() {
     if (!this.state.noMore) {
-      this.fetch();
+      this.fetch(this.lastPhotoFetched);
     }
   }
 
