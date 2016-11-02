@@ -14,13 +14,11 @@ import {
 import Video from "react-native-video";
 
 var tempDuration = [];
+var isFirstTime = true;
 
 class CameraRollPicker extends Component {
   constructor(props) {
     super(props);
-
-    this.lastPhotoFetched = undefined; // Using `null` would crash ReactNative CameraRoll on iOS.
-
     this.state = {
       images: [],
       selected: this.props.selected,
@@ -32,6 +30,8 @@ class CameraRollPicker extends Component {
   }
 
   componentWillMount() {
+    isFirstTime = true;
+
     var {width} = Dimensions.get('window');
     var {imageMargin, imagesPerRow, containerWidth} = this.props;
 
@@ -58,14 +58,13 @@ class CameraRollPicker extends Component {
     }
   }
 
-  _fetch(after) {
+  _fetch() {
     var {groupTypes, assetType} = this.props;
 
     var fetchParams = {
-      first: 18,
+      first: 20,
       groupTypes: groupTypes,
       assetType: assetType,
-      after,
     };
 
     if (Platform.OS === "android") {
@@ -77,7 +76,7 @@ class CameraRollPicker extends Component {
       fetchParams.after = this.state.lastCursor;
     }
 
-    CameraRoll.getPhotos(fetchParams, this._appendImages.bind(this), (e) => console.log(e));
+    CameraRoll.getPhotos(fetchParams).then((data) => this._appendImages(data), (e) => console.log(e));
   }
 
   _appendImages(data) {
@@ -93,8 +92,9 @@ class CameraRollPicker extends Component {
     if (assets.length > 0) {
       newState.lastCursor = data.page_info.end_cursor;
 
-      if (this.lastPhotoFetched === undefined) {
-        var listData = this.state.images.concat(assets);
+      var listData = this.state.images.concat(assets);
+      if (isFirstTime) {
+        isFirstTime = false;
         var item = {
           node : null
         };
