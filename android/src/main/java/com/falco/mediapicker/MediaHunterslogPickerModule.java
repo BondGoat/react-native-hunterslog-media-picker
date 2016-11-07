@@ -38,6 +38,8 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
                     String jsonArr = data.getStringExtra(MEDIA_RESULT);
 
                     mCallback.invoke(jsonArr);
+                } else {
+                    mCallback.invoke("");
                 }
 
                 break;

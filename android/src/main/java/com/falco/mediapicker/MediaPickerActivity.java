@@ -144,7 +144,8 @@ public class MediaPickerActivity extends Activity {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finish();
+
+                setResult(Constants.MEDIA_RESULT_CODE, null);
 
                 if (mMediaList != null) {
                     mMediaList.clear();
@@ -154,6 +155,8 @@ public class MediaPickerActivity extends Activity {
                     mSelectedMediaList.clear();
                     mSelectedMediaList = null;
                 }
+
+                finish();
             }
         });
 
@@ -342,6 +345,8 @@ public class MediaPickerActivity extends Activity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            setResult(Constants.MEDIA_RESULT_CODE, null);
+
             if (mMediaList != null) {
                 mMediaList.clear();
                 mMediaList = null;
@@ -626,22 +631,22 @@ public class MediaPickerActivity extends Activity {
 
         for (MediaItem item : mSelectedMediaList) {
             if (item != null) {
-                if (item.RealUrl.toLowerCase().contains("http") ||
-                        item.RealUrl.toLowerCase().contains("https")) {
-
-                    MediaItem itemFromServer = new MediaItem();
-                    itemFromServer.Id = mMediaList.size();
-                    itemFromServer.RealUrl = item.RealUrl;
-                    itemFromServer.Url = item.Url;
-                    itemFromServer.ThumbUrl = item.ThumbUrl;
-                    itemFromServer.Location = item.Location;
-                    itemFromServer.Created_At = String.valueOf(System.currentTimeMillis());
-                    itemFromServer.IsChecked = true;
-                    itemFromServer.isTrophyAlbum = item.isTrophyAlbum;
-
-                    mMediaList.add(1, itemFromServer);
-
-                } else {
+//                if (item.RealUrl.toLowerCase().contains("http") ||
+//                        item.RealUrl.toLowerCase().contains("https")) {
+//
+//                    MediaItem itemFromServer = new MediaItem();
+//                    itemFromServer.Id = mMediaList.size();
+//                    itemFromServer.RealUrl = item.RealUrl;
+//                    itemFromServer.Url = item.Url;
+//                    itemFromServer.ThumbUrl = item.ThumbUrl;
+//                    itemFromServer.Location = item.Location;
+//                    itemFromServer.Created_At = String.valueOf(System.currentTimeMillis());
+//                    itemFromServer.IsChecked = true;
+//                    itemFromServer.isTrophyAlbum = item.isTrophyAlbum;
+//
+//                    mMediaList.add(1, itemFromServer);
+//
+//                } else {
                     for (MediaItem originItem : mMediaList) {
                         if (originItem != null &&
                                 originItem.RealUrl != null &&
@@ -650,7 +655,7 @@ public class MediaPickerActivity extends Activity {
                             break;
                         }
                     }
-                }
+//                }
             }
         }
     }
@@ -689,6 +694,7 @@ public class MediaPickerActivity extends Activity {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         takePictureIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, max_video_duration);
         takePictureIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);//Set quality when record video
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, "mp4");
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(takePictureIntent, Constants.REQUEST_VIDEO_CAPTURE);
         }
@@ -874,6 +880,8 @@ public class MediaPickerActivity extends Activity {
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } finally {
+                        thumbBit.recycle();
                     }
 
                 }
@@ -884,18 +892,25 @@ public class MediaPickerActivity extends Activity {
                         item.RealUrl.toLowerCase().contains("gif")) {
 
                     Bitmap matrixBitmap = Utils.rotaionImage(item.RealUrl.replace("file://", ""));
+
+                    String url = item.RealUrl;
+
                     int scaleW = matrixBitmap.getWidth(), scaleH = matrixBitmap.getHeight();
 
                     if (scaleW > Constants.MAX_SCALED_SIZE) {
                         scaleW = Constants.MAX_SCALED_SIZE;
                         scaleH = (Constants.MAX_SCALED_SIZE * matrixBitmap.getHeight()) / matrixBitmap.getWidth();
+
+                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(matrixBitmap, scaleW, scaleH, true);
+                        url = Utils.saveImage(getApplicationContext(), scaledBitmap, item.RealUrl);
+
+                        scaledBitmap.recycle();
                     }
 
-                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(matrixBitmap, scaleW, scaleH, true);
-
-                    String url = Utils.saveImage(getApplicationContext(), scaledBitmap, item.RealUrl);
                     item.Url = "file://" + url;
                     item.ThumbUrl = "file://" + url;
+
+                    matrixBitmap.recycle();
                 }
             }
 

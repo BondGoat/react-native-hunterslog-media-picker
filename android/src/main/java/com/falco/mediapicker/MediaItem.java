@@ -18,7 +18,7 @@ public class MediaItem {
     public LocationItem Location;
     public Boolean IsChecked = false;
     public String Created_At;
-    public Boolean isTrophyAlbum = false;
+    public boolean isTrophyAlbum = false;
 }
 
 class LocationItem {
