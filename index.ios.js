@@ -71,10 +71,10 @@ export default class MediaHunterslogPicker extends Component {
 var styles = StyleSheet.create({
   marker: {
     position: 'absolute',
-    bottom: 5,
     backgroundColor: 'transparent',
     width: 20,
     height: 20,
-    right: 5
+    right: 12,
+    bottom: 12,
   }
 });
