@@ -71,7 +71,6 @@ public class MediaPickerActivity extends Activity {
     int deviceW, deviceH, imageW, deviceWPx, deviceHPx;
 
     public static List<MediaItem> mSelectedMediaList = new ArrayList<>();
-    public static List<MediaItem> mReceivedMediaList = new ArrayList<>();
     public static List<MediaItem> mMediaList = new ArrayList<>();
 
     public final String TAG = MediaPickerActivity.this.getClass().getSimpleName();
@@ -98,15 +97,15 @@ public class MediaPickerActivity extends Activity {
                 Gson gson = new Gson();
                 MediaItem[] mediaList = gson.fromJson(jsonArr, MediaItem[].class);
 
-                if (mReceivedMediaList == null)
-                    mReceivedMediaList = new ArrayList<>();
+                if (mSelectedMediaList == null)
+                    mSelectedMediaList = new ArrayList<>();
                 else
-                    mReceivedMediaList.clear();
+                    mSelectedMediaList.clear();
 
                 if (mediaList != null && mediaList.length > 0) {
                     for (MediaItem item : mediaList) {
                         Log.e(TAG, "" + item.Id);
-                        mReceivedMediaList.add(item);
+                        mSelectedMediaList.add(item);
 
                         if (item.RealUrl.toLowerCase().contains("mp4") ||
                                 item.RealUrl.toLowerCase().contains("m4v") ||
@@ -156,10 +155,6 @@ public class MediaPickerActivity extends Activity {
                     mSelectedMediaList.clear();
                     mSelectedMediaList = null;
                 }
-                if (mReceivedMediaList != null) {
-                    mReceivedMediaList.clear();
-                    mReceivedMediaList = null;
-                }
 
                 finish();
             }
@@ -169,7 +164,7 @@ public class MediaPickerActivity extends Activity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mSelectedMediaList.size() > 0 || mReceivedMediaList.size() > 0)
+                if (mSelectedMediaList.size() > 0)
                     new PrepareSendingData().execute();
                 else {
                     showWarningDialog(getString(R.string.txt_limit_add));
@@ -276,9 +271,6 @@ public class MediaPickerActivity extends Activity {
                             if (mSelectedMediaList == null)
                                 mSelectedMediaList = new ArrayList<>();
 
-                            if (mReceivedMediaList != null)
-                                mReceivedMediaList.clear();
-
                             mSelectedMediaList.clear();
                             mSelectedMediaList.add(item);
 
@@ -327,9 +319,6 @@ public class MediaPickerActivity extends Activity {
 
                             if (mSelectedMediaList == null)
                                 mSelectedMediaList = new ArrayList<>();
-
-                            if (mReceivedMediaList != null)
-                                mReceivedMediaList.clear();
 
                             mSelectedMediaList.clear();
                             mSelectedMediaList.add(item);
@@ -646,7 +635,7 @@ public class MediaPickerActivity extends Activity {
 
     private void checkSelectedItems() {
 
-        for (MediaItem item : mReceivedMediaList) {
+        for (MediaItem item : mSelectedMediaList) {
             if (item != null) {
 //                if (item.RealUrl.toLowerCase().contains("http") ||
 //                        item.RealUrl.toLowerCase().contains("https")) {
@@ -933,13 +922,7 @@ public class MediaPickerActivity extends Activity {
             }
 
             Gson gson = new Gson();
-            List<MediaItem> newList = new ArrayList<>();
-            if (mReceivedMediaList != null ) {
-                newList.addAll(mReceivedMediaList);
-                newList.addAll(mSelectedMediaList);
-            }
-
-            return gson.toJson(newList);
+            return gson.toJson(mSelectedMediaList);
         }
 
         @Override
@@ -963,10 +946,6 @@ public class MediaPickerActivity extends Activity {
                 if (mSelectedMediaList != null) {
                     mSelectedMediaList.clear();
                     mSelectedMediaList = null;
-                }
-                if (mReceivedMediaList != null) {
-                    mReceivedMediaList.clear();
-                    mReceivedMediaList = null;
                 }
 
                 finish();
