@@ -229,6 +229,9 @@ public class MediaPickerActivity extends Activity {
 
             case Constants.REQUEST_IMAGE_PREVIEW:
                 if (resultCode == RESULT_OK) {
+
+                    showWaitingDialog();
+
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -248,7 +251,7 @@ public class MediaPickerActivity extends Activity {
                                     MediaStore.Images.Media.LONGITUDE,
                                     MediaStore.Video.Media.DATE_ADDED};
 
-                            final Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_MODIFIED + " DESC");
+                            final Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_MODIFIED + " DESC LIMIT 1");
 
                             // Put it in the image view
                             assert cursor != null;
@@ -292,6 +295,9 @@ public class MediaPickerActivity extends Activity {
 
             case Constants.REQUEST_VIDEO_PREVIEW:
                 if (resultCode == RESULT_OK) {
+
+                    showWaitingDialog();
+
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -302,7 +308,7 @@ public class MediaPickerActivity extends Activity {
                                     MediaStore.Video.Media.LONGITUDE,
                                     MediaStore.Video.Media.DATE_ADDED};
 
-                            final Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_MODIFIED + " DESC");
+                            final Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_MODIFIED + " DESC LIMIT 1");
 
                             // Put it in the image view
                             assert cursor != null;
@@ -772,11 +778,12 @@ public class MediaPickerActivity extends Activity {
             mProgressDialog.setCancelable(false);
         }
 
-        mProgressDialog.show();
+        if (!mProgressDialog.isShowing())
+            mProgressDialog.show();
     }
 
     private void hideWaitingDialog() {
-        if (mProgressDialog != null) {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
     }

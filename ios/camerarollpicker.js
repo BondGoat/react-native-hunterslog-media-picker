@@ -109,9 +109,6 @@ class CameraRollPicker extends Component {
     }
 
     this.setState(newState);
-
-    if (listData.length)
-      this.lastPhotoFetched = listData[listData.length - 1].image.uri;
   }
 
   _arrayDurationIndexOf(uri) {
@@ -242,7 +239,7 @@ class CameraRollPicker extends Component {
 
   _onEndReached() {
     if (!this.state.noMore) {
-      this.fetch(this.lastPhotoFetched);
+      this.fetch();
     }
   }
 
