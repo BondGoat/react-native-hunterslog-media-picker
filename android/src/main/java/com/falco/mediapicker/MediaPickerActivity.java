@@ -69,6 +69,7 @@ public class MediaPickerActivity extends Activity {
     String videoLat;// Save video lat code after take photo and send it to mSelectedMediaList
     String videoLong;// Save video long code after take photo and send it to mSelectedMediaList
     int deviceW, deviceH, imageW, deviceWPx, deviceHPx;
+    boolean isCaptureVideo = true;
 
     public static List<MediaItem> mSelectedMediaList = new ArrayList<>();
     public static List<MediaItem> mMediaList = new ArrayList<>();
@@ -91,6 +92,8 @@ public class MediaPickerActivity extends Activity {
                 max_video = receivedIntent.getIntExtra(Constants.MAX_UPLOADABLE_VIDEO, 1);
             if (receivedIntent.hasExtra(Constants.MAX_UPLOADABLE_VIDEO_DURATION))
                 max_video_duration = receivedIntent.getIntExtra(Constants.MAX_UPLOADABLE_VIDEO_DURATION, 10);
+            if (receivedIntent.hasExtra(Constants.IS_CAPTURE_VIDEO))
+                isCaptureVideo = receivedIntent.getBooleanExtra(Constants.IS_CAPTURE_VIDEO, true);
             if (receivedIntent.hasExtra(Constants.MEDIA_RESULT)) {
                 String jsonArr = receivedIntent.getStringExtra(Constants.MEDIA_RESULT);
 
@@ -467,7 +470,11 @@ public class MediaPickerActivity extends Activity {
     private View.OnClickListener btnCaptureListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            showActionDialog();
+            if (isCaptureVideo) {
+                showActionDialog();
+            } else {
+                dispatchTakePictureIntent();
+            }
         }
     };
 

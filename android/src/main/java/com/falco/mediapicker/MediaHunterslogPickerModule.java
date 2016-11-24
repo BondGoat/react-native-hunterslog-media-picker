@@ -16,12 +16,6 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
 
     Callback mCallback;
 
-    // Config value
-    public final String MAX_UPLOADABLE_PHOTO = "MAX_UPLOADABLE_PHOTO";
-    public final String MAX_UPLOADABLE_VIDEO = "MAX_UPLOADABLE_VIDEO";
-    public final String MAX_UPLOADABLE_VIDEO_DURATION = "MAX_UPLOADABLE_VIDEO_DURATION";
-    public final static int MEDIA_RESULT_CODE = 0;
-    public final static String MEDIA_RESULT = "MEDIA_RESULT";
     // --------------------------
 
     public MediaHunterslogPickerModule(ReactApplicationContext reactContext) {
@@ -32,10 +26,10 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case MEDIA_RESULT_CODE:
-                if (data != null && data.hasExtra(MEDIA_RESULT)) {
+            case Constants.MEDIA_RESULT_CODE:
+                if (data != null && data.hasExtra(Constants.MEDIA_RESULT)) {
 
-                    String jsonArr = data.getStringExtra(MEDIA_RESULT);
+                    String jsonArr = data.getStringExtra(Constants.MEDIA_RESULT);
 
                     mCallback.invoke(jsonArr);
                 } else {
@@ -52,23 +46,24 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
-    public void showMediaPicker(int max_photo, int max_video, int max_video_duration, String selectedList, Callback callback) {
+    public void showMediaPicker(boolean isCaptureVideo, int max_photo, int max_video, int max_video_duration, String selectedList, Callback callback) {
         mCallback = callback;
         Activity currentActivity = getCurrentActivity();
         if (currentActivity != null) {
 
             Intent intent = new Intent(getReactApplicationContext(), MediaPickerActivity.class);
-            intent.putExtra(MAX_UPLOADABLE_PHOTO, max_photo);
-            intent.putExtra(MAX_UPLOADABLE_VIDEO, max_video);
-            intent.putExtra(MAX_UPLOADABLE_VIDEO_DURATION, max_video_duration);
+            intent.putExtra(Constants.MAX_UPLOADABLE_PHOTO, max_photo);
+            intent.putExtra(Constants.MAX_UPLOADABLE_VIDEO, max_video);
+            intent.putExtra(Constants.MAX_UPLOADABLE_VIDEO_DURATION, max_video_duration);
+            intent.putExtra(Constants.IS_CAPTURE_VIDEO, isCaptureVideo);
 
 
-            intent.putExtra(MEDIA_RESULT, selectedList);
+            intent.putExtra(Constants.MEDIA_RESULT, selectedList);
 
             if (MediaPickerActivity.mMediaList != null)
                 MediaPickerActivity.mMediaList.clear();
 
-            currentActivity.startActivityForResult(intent, MEDIA_RESULT_CODE);
+            currentActivity.startActivityForResult(intent, Constants.MEDIA_RESULT_CODE);
         }
     }
 

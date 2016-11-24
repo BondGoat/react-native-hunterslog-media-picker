@@ -16,7 +16,8 @@ public class Constants {
     public final static String MAX_UPLOADABLE_VIDEO_DURATION = "MAX_UPLOADABLE_VIDEO_DURATION";
     public final static int MEDIA_RESULT_CODE = 0;
     public final static String MEDIA_RESULT = "MEDIA_RESULT";
-    public final static int MAX_SCALED_SIZE = 700;
+    public final static int MAX_SCALED_SIZE = 500;
+    public final static String IS_CAPTURE_VIDEO = "IS_CAPTURE_VIDEO";
     // --------------------------
 
     // Camera intent
