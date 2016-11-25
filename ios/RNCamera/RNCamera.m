@@ -17,6 +17,7 @@ RCT_EXPORT_MODULE();
 RCTResponseSenderBlock callback, callbackPlayback;
 
 RCT_EXPORT_METHOD(showCamera: (int) maxVideoDuration
+                  isCaptureVideo:(BOOL) isCaptureVideo
                   callback:(RCTResponseSenderBlock)mediaCallback)
 {
     callback = mediaCallback;
@@ -29,7 +30,10 @@ RCT_EXPORT_METHOD(showCamera: (int) maxVideoDuration
         picker.videoMaximumDuration = maxVideoDuration;
         picker.sourceType = UIImagePickerControllerSourceTypeCamera;
         picker.videoQuality = UIImagePickerControllerQualityTypeMedium;
-        picker.mediaTypes = [[NSArray alloc] initWithObjects: (NSString *) kUTTypeMovie, (NSString *)kUTTypeImage, nil];
+        if (isCaptureVideo)
+            picker.mediaTypes = [[NSArray alloc] initWithObjects: (NSString *) kUTTypeMovie, (NSString *)kUTTypeImage, nil];
+        else
+            picker.mediaTypes = [[NSArray alloc] initWithObjects: (NSString *)kUTTypeImage, nil];
         
         AppDelegate *delegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         dispatch_async(dispatch_get_main_queue(), ^{
