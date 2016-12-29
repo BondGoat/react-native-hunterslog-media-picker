@@ -79,6 +79,9 @@ public class MediaPickerActivity extends Activity {
     boolean isReadExternalStoragePermissionAccepted = false;
     boolean isWriteExternalStoragePermissionAccepted = false;
 
+    MediaItem currentSelectedItem = null;
+    int currentSelectedPosition = -1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -174,6 +177,9 @@ public class MediaPickerActivity extends Activity {
                 }
             }
         });
+        if (!isCaptureVideo && max_video == 0) {
+            btnAdd.setEnabled(false);
+        }
     }
 
     @Override
@@ -394,71 +400,94 @@ public class MediaPickerActivity extends Activity {
             if (view != null && item != null) {
                 ImageView imgSelected = (ImageView) view.findViewById(R.id.ic_selected);
 
-                if (item.IsChecked) {
-                    imgSelected.setVisibility(View.GONE);
+                if (!isCaptureVideo && max_video == 0) {
+                    selected_photo = 1;
+                    mSelectedMediaList.clear();
+                    if (currentSelectedItem != null)
+                        currentSelectedItem.IsChecked = false;
+                    if (currentSelectedPosition > 0)
+                        mMediaList.get(currentSelectedPosition).IsChecked = false;
 
-                    if (item.Url.toLowerCase().contains("mp4") ||
-                            item.Url.toLowerCase().contains("mov") ||
-                            item.Url.toLowerCase().contains("3gp") ||
-                            item.Url.toLowerCase().contains("m4v")) {
-                        selected_video--;
-                    } else if (item.Url.toLowerCase().contains("png") ||
-                            item.Url.toLowerCase().contains("jpg") ||
-                            item.Url.toLowerCase().contains("jpeg")) {
-                        selected_photo--;
-                    }
-                    item.IsChecked = false;
+                    mSelectedMediaList.add(item);
+                    imgSelected.setVisibility(View.VISIBLE);
+                    item.IsChecked = true;
+                    currentSelectedItem = item;
+                    currentSelectedPosition = position;
 
-                    int i = 0;
-                    while (i < mSelectedMediaList.size()) {
-                        if (item.Id == mSelectedMediaList.get(i).Id) {
-                            mSelectedMediaList.remove(i);
-                            break;
-                        }
+                    btnAdd.setEnabled(mSelectedMediaList.size() > 0);
 
-                        i++;
-                    }
+                    mMediaList.get(position).IsChecked = currentSelectedItem.IsChecked;
+                    imageAdapter.notifyDataSetChanged();
+
+                    return;
+
                 } else {
-                    if ((item.Url.toLowerCase().contains("mp4") || item.Url.toLowerCase().contains("mov") || item.Url.toLowerCase().contains("3gp") || item.Url.toLowerCase().contains("m4v"))
-                            && selected_video < max_video) {
-
-                        // Case user already select photo then they select video
-                        if (selected_photo > 0) {
-                            showWarningDialog(getString(R.string.txt_warning));
-                            return;
-                        }
-
-
-                        selected_video++;
-                        mSelectedMediaList.add(item);
-                        imgSelected.setVisibility(View.VISIBLE);
-                        item.IsChecked = true;
-
-                    } else if ((item.Url.toLowerCase().contains("png") ||
-                            item.Url.toLowerCase().contains("jpg") ||
-                            item.Url.toLowerCase().contains("jpeg")) && selected_photo < max_photo) {
-
-                        // Case user already select video then they select photo
-                        if (selected_video > 0) {
-                            showWarningDialog(getString(R.string.txt_warning));
-                            return;
-                        }
-
-
-                        selected_photo++;
-                        mSelectedMediaList.add(item);
-                        imgSelected.setVisibility(View.VISIBLE);
-                        item.IsChecked = true;
-
-                    } else {
+                    if (item.IsChecked) {
+                        imgSelected.setVisibility(View.GONE);
+                
                         if (item.Url.toLowerCase().contains("mp4") ||
                                 item.Url.toLowerCase().contains("mov") ||
                                 item.Url.toLowerCase().contains("3gp") ||
-                                item.Url.toLowerCase().contains("m4v"))
-                            showWarningDialog(getString(R.string.txt_warning_video).replace("#V", "" + max_video));
-                        else
-                            showWarningDialog(getString(R.string.txt_warning_photo).replace("#P", "" + max_photo));
-                        return;
+                                item.Url.toLowerCase().contains("m4v")) {
+                            selected_video--;
+                        } else if (item.Url.toLowerCase().contains("png") ||
+                                item.Url.toLowerCase().contains("jpg") ||
+                                item.Url.toLowerCase().contains("jpeg")) {
+                            selected_photo--;
+                        }
+                        item.IsChecked = false;
+
+                        int i = 0;
+                        while (i < mSelectedMediaList.size()) {
+                            if (item.Id == mSelectedMediaList.get(i).Id) {
+                                mSelectedMediaList.remove(i);
+                                break;
+                            }
+
+                            i++;
+                        }
+                    } else {
+                        if ((item.Url.toLowerCase().contains("mp4") || item.Url.toLowerCase().contains("mov") || item.Url.toLowerCase().contains("3gp") || item.Url.toLowerCase().contains("m4v"))
+                                && selected_video < max_video) {
+
+                            // Case user already select photo then they select video
+                            if (selected_photo > 0) {
+                                showWarningDialog(getString(R.string.txt_warning));
+                                return;
+                            }
+
+
+                            selected_video++;
+                            mSelectedMediaList.add(item);
+                            imgSelected.setVisibility(View.VISIBLE);
+                            item.IsChecked = true;
+
+                        } else if ((item.Url.toLowerCase().contains("png") ||
+                                item.Url.toLowerCase().contains("jpg") ||
+                                item.Url.toLowerCase().contains("jpeg")) && selected_photo < max_photo) {
+
+                            // Case user already select video then they select photo
+                            if (selected_video > 0) {
+                                showWarningDialog(getString(R.string.txt_warning));
+                                return;
+                            }
+
+
+                            selected_photo++;
+                            mSelectedMediaList.add(item);
+                            imgSelected.setVisibility(View.VISIBLE);
+                            item.IsChecked = true;
+
+                        } else {
+                            if (item.Url.toLowerCase().contains("mp4") ||
+                                    item.Url.toLowerCase().contains("mov") ||
+                                    item.Url.toLowerCase().contains("3gp") ||
+                                    item.Url.toLowerCase().contains("m4v"))
+                                showWarningDialog(getString(R.string.txt_warning_video).replace("#V", "" + max_video));
+                            else
+                                showWarningDialog(getString(R.string.txt_warning_photo).replace("#P", "" + max_photo));
+                            return;
+                        }
                     }
                 }
 
@@ -568,10 +597,12 @@ public class MediaPickerActivity extends Activity {
                 isWriteExternalStoragePermissionAccepted = true;
 
             if (isReadExternalStoragePermissionAccepted && isWriteExternalStoragePermissionAccepted) {
-                if (mMediaList == null || mMediaList.size() == 0) {
+                if (mMediaList != null)
+                    mMediaList.clear();
+//                if (mMediaList == null || mMediaList.size() == 0) {
                     Log.e(TAG, "GET DATA : " + ((mMediaList == null) ? "NULL" : mMediaList.size()));
                     new GetMediaFiles().execute();
-                }
+//                }
             }
         }
     }
@@ -815,7 +846,8 @@ public class MediaPickerActivity extends Activity {
         protected Void doInBackground(Void... params) {
 
             getAllShownImagesPath(MediaPickerActivity.this);
-            getAllShownVideosPath(MediaPickerActivity.this);
+            if (isCaptureVideo && max_video > 0)
+                getAllShownVideosPath(MediaPickerActivity.this);
 
             checkSelectedItems();
 
