@@ -29,6 +29,7 @@ export default class MediaHunterslogPicker extends Component {
     this.state = {
       is_spinner_visible: false,
       selectedImages: this.props.selectedImages,
+      isCaptureVideo: this.props.isCaptureVideo
     }
   }
 
@@ -49,7 +50,7 @@ export default class MediaHunterslogPicker extends Component {
       <View style={{flex: 1}}>
         <CameraRollPicker
           groupTypes='SavedPhotos'
-          assetType='All'
+          assetType={(this.state.isCaptureVideo) ? 'All' : 'Photos'}
           selected={this.props.selectedImages}
           maximum={10}
           imagesPerRow={3}
