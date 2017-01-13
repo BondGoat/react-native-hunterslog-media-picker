@@ -170,11 +170,17 @@ public class MediaPickerActivity extends Activity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mSelectedMediaList.size() > 0)
-                    new PrepareSendingData().execute();
-                else {
-                    showWarningDialog(getString(R.string.txt_limit_add));
+                try {
+                    if (mSelectedMediaList.size() > 0)
+                        new PrepareSendingData().execute();
+                    else {
+                        showWarningDialog(getString(R.string.txt_limit_add));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    finish();
                 }
+                
             }
         });
         if (!isCaptureVideo && max_video == 0) {
@@ -255,7 +261,7 @@ public class MediaPickerActivity extends Activity {
                                     MediaStore.Images.Media.LONGITUDE,
                                     MediaStore.Video.Media.DATE_ADDED};
 
-                            final Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_MODIFIED + " DESC LIMIT 1");
+                            final Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_ADDED + " DESC LIMIT 1");
 
                             // Put it in the image view
                             assert cursor != null;
@@ -379,7 +385,12 @@ public class MediaPickerActivity extends Activity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
 
-            new PrepareSendingData().execute();
+            try {
+                new PrepareSendingData().execute();
+            } catch (Exception e) {
+                e.printStackTrace();
+                finish();
+            }
         }
     };
 
@@ -549,8 +560,10 @@ public class MediaPickerActivity extends Activity {
      * Request for each permission
      */
     private void requestPermissions() {
-        requestPermission(Constants.READ_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE);
-        requestPermission(Constants.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (!isReadExternalStoragePermissionAccepted && !isWriteExternalStoragePermissionAccepted) {
+            requestPermission(Constants.READ_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE);
+            requestPermission(Constants.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
     }
 
     /**
