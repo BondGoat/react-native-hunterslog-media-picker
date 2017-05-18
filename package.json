@@ -1,6 +1,6 @@
 {
   "name": "react-native-hunterslog-media-picker",
-  "version": "3.4.2",
+  "version": "4.0.0",
   "description": "React Native Media Picker component used only for HuntersLog Project. Any modifying is illegal.",
   "main": "index",
   "repository": {
@@ -25,10 +25,6 @@
   "peerDependencies": {
     "react-native": ">=0.30.0",
     "react": ">=15.2.0"
-  },
-  "dependencies": {
-    "react-native-video": "0.9.0",
-    "react-native-asset-thumbnail": "0.0.4"
   },
   "homepage": "https://github.com/BondGoat/react-native-hunterslog-media-picker/blob/master/README.md"
 }
