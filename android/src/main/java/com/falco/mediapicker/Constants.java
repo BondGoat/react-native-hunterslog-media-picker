@@ -28,4 +28,8 @@ public class Constants {
     public final static int REQUEST_TAKE_PHOTO = REQUEST_VIDEO_PREVIEW + 1;
 
     // --------------------------
+    public static int STEP = 0;
+    public static int MEDIA_LIST_TYPE = 0;
+    public static List<SelectedMediaItem> SELECTED_MEDIA_ITEM_LIST = new ArrayList<SelectedMediaItem>();
+    public static List<Integer> EXPAND_GROUPS = new ArrayList<>();
 }

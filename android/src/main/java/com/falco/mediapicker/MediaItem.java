@@ -12,6 +12,7 @@ package com.falco.mediapicker;
 
 public class MediaItem {
     public int Id;
+    public int OrderNumber;
     public String RealUrl;
     public String Url;
     public String ThumbUrl;

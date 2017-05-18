@@ -69,7 +69,7 @@ public class MediaPickerActivity extends Activity {
     String videoLat;// Save video lat code after take photo and send it to mSelectedMediaList
     String videoLong;// Save video long code after take photo and send it to mSelectedMediaList
     int deviceW, deviceH, imageW, deviceWPx, deviceHPx;
-    boolean isCaptureVideo = true;
+    boolean isCaptureVideo = true, isRunning = false;
 
     public static List<MediaItem> mSelectedMediaList = new ArrayList<>();
     public static List<MediaItem> mMediaList = new ArrayList<>();
@@ -239,6 +239,7 @@ public class MediaPickerActivity extends Activity {
 
             case Constants.REQUEST_IMAGE_PREVIEW:
                 if (resultCode == RESULT_OK) {
+                    isRunning = true;
 
                     showWaitingDialog();
 
@@ -302,6 +303,7 @@ public class MediaPickerActivity extends Activity {
 
             case Constants.REQUEST_VIDEO_PREVIEW:
                 if (resultCode == RESULT_OK) {
+                    isRunning = true;
 
                     showWaitingDialog();
 
@@ -366,6 +368,9 @@ public class MediaPickerActivity extends Activity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (isRunning)
+                return false;
+
             setResult(Constants.MEDIA_RESULT_CODE, null);
 
             if (mMediaList != null) {
@@ -669,7 +674,7 @@ public class MediaPickerActivity extends Activity {
 
             LocationItem location = new LocationItem();
             location.Lat = TextUtils.isEmpty(lat) ? "0" : lat;
-            location.Lng = TextUtils.isEmpty(lng) ? "0" : lng;;
+            location.Lng = TextUtils.isEmpty(lng) ? "0" : lng;
 
             MediaItem item = new MediaItem();
             item.Id = mMediaList.size();
@@ -950,7 +955,7 @@ public class MediaPickerActivity extends Activity {
                         item.RealUrl.toLowerCase().contains("png") ||
                         item.RealUrl.toLowerCase().contains("gif")) {
 
-                    Bitmap matrixBitmap = Utils.rotaionImage(item.RealUrl.replace("file://", ""));
+                    Bitmap matrixBitmap = Utils.rotateImage(item.RealUrl.replace("file://", ""));
 
                     String url = item.RealUrl;
 
@@ -999,6 +1004,8 @@ public class MediaPickerActivity extends Activity {
                     mSelectedMediaList.clear();
                     mSelectedMediaList = null;
                 }
+
+                isRunning = false;
 
                 finish();
             }

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    tools:context=".SortByDateMediaPickerActivity">
+
+    <RelativeLayout
+        android:id="@+id/layoutHeader"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:gravity="center_vertical"
+        android:layout_alignParentTop="true"
+        android:background="@color/bg_hunterslog"
+        android:paddingLeft="10dp"
+        android:paddingRight="5dp">
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="15dp"
+            android:layout_height="30dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/ico_back_selector" />
+
+        <TextView
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/txt_media_picker_header"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:gravity="center" />
+
+
+        <Button
+            android:id="@+id/btnAdd"
+            android:layout_width="50dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:text="@string/txt_add"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:background="@android:color/transparent" />
+
+    </RelativeLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/layoutHeader">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <Button
+                android:id="@+id/btnCapture"
+                android:layout_margin="2dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:scaleType="centerCrop"
+                android:background="@drawable/ico_media_capture"/>
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/expandableListView_container">
+        </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

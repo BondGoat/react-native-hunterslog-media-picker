@@ -359,9 +359,28 @@ public class Utils {
         return px / ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
-    public static Bitmap rotaionImage(String path) {
+    public static Bitmap resizeImage(String path){
+        Bitmap originBitmap = null;
+        final String TAG = "ROTATE_AND_RESIZE_IMAGE";
+        try{
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 4;
+            originBitmap = BitmapFactory.decodeFile(path);
+            int height = originBitmap.getHeight(), width = originBitmap.getWidth();
+
+            if (height > 4096 || width > 4096){
+                originBitmap = BitmapFactory.decodeFile(path, options);
+            }
+        } catch(Exception e ){
+            e.printStackTrace();
+        }
+        return originBitmap;
+    }
+
+    public static Bitmap rotateImage(String path) {
         Bitmap matrixBitmap = null;
         Bitmap originBitmap = null;
+
         try {
             ExifInterface exif = new ExifInterface(path.replace("file://", ""));
             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
@@ -375,7 +394,7 @@ public class Utils {
                 matrix.postRotate(270);
             }
 
-            originBitmap = BitmapFactory.decodeFile(path);
+            originBitmap = resizeImage(path);
             matrixBitmap = Bitmap.createBitmap(originBitmap, 0, 0, originBitmap.getWidth(), originBitmap.getHeight(), matrix, true);
 
         } catch (Exception e) {
@@ -396,7 +415,7 @@ public class Utils {
 
         File file = new File(filePath);
         if (file.exists()) {
-            Bitmap rotatedBit = rotaionImage(filePath);
+            Bitmap rotatedBit = rotateImage(filePath);
 
             MediaStore.Images.Media.insertImage(context.getContentResolver(), rotatedBit, file.getName(),
                     "Image captured by TrophyBook");
@@ -450,5 +469,30 @@ public class Utils {
         }
 
         return false;
+    }
+
+    public static String getImageDateTaken(String filePath){
+        String dateString = null;
+        File file = new File(filePath);
+        if(file.exists()) //Extra check, Just to validate the given path
+        {
+            try
+            {
+                ExifInterface intf = new ExifInterface(filePath);
+                if(intf != null)
+                {
+                    dateString = intf.getAttribute(ExifInterface.TAG_DATETIME);
+                    //Log.i("Dated : "+ dateString.toString()); //Display dateString. You can do/use it your own way
+                } else {
+                    dateString = new Date(file.lastModified()).toString();
+                }
+                return dateString;
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return dateString;
     }
 }

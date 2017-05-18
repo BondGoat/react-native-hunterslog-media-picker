@@ -29,6 +29,7 @@ public class PhotoPreviewActivity extends Activity {
     String mCurrentPhotoPath;
 
     public final int REQUEST_TAKE_PHOTO = 0;
+    public final int MAX_IMAGE_SIDE_RESOLUTION = 4096;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +45,7 @@ public class PhotoPreviewActivity extends Activity {
 
         imgPreview.setMaxZoom(3f);
 
-        bitmapPhotoPreview = Utils.rotaionImage(mCurrentPhotoPath.replace("file:/", ""));
+        bitmapPhotoPreview = Utils.rotateImage(mCurrentPhotoPath.replace("file:/", ""));
         if (bitmapPhotoPreview != null && !bitmapPhotoPreview.isRecycled())
             imgPreview.setImageBitmap(bitmapPhotoPreview);
 
@@ -129,7 +130,7 @@ public class PhotoPreviewActivity extends Activity {
         switch (requestCode) {
             case REQUEST_TAKE_PHOTO:
                 if (resultCode == RESULT_OK && !TextUtils.isEmpty(mCurrentPhotoPath)) {
-                    bitmapPhotoPreview = Utils.rotaionImage(mCurrentPhotoPath.replace("file:/", ""));
+                    bitmapPhotoPreview = Utils.rotateImage(mCurrentPhotoPath.replace("file:/", ""));
                     if (bitmapPhotoPreview != null && !bitmapPhotoPreview.isRecycled())
                         imgPreview.setImageBitmap(bitmapPhotoPreview);
                 }
