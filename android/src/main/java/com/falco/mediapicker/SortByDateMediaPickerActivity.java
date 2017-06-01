@@ -113,12 +113,13 @@ public class SortByDateMediaPickerActivity extends Activity {
 
                 if (mediaList != null && mediaList.length > 0) {
                     for (MediaItem item : mediaList) {
-                        Log.e(TAG, "" + item.Id);
-                        if(mMediaList != null && mMediaList.size() > 0){
-                            for(int i=0; i<mMediaList.size(); i++){
-                                if(mMediaList.get(i).RealUrl.equals(item.RealUrl)){
+                        // if(mMediaList != null && mMediaList.size() > 0){
+                        //     for(int i=0; i<mMediaList.size(); i++){
+                        //         Log.v(TAG, "mMediaList.get(" + i + ").RealUrl: " + mMediaList.get(i).RealUrl);
+                        //         Log.v(TAG, "item.RealUrl: " + item.RealUrl);
+                        //         if(mMediaList.get(i).RealUrl.equals(item.RealUrl)){
                                     SelectedMediaItem tmpSelectedItem = new SelectedMediaItem();
-                                    tmpSelectedItem.Id = i;
+                                    //tmpSelectedItem.Id = i;
                                     tmpSelectedItem.MediaItem = item;
                                     tmpSelectedItem.MediaItem.IsChecked = true;
                                     Constants.SELECTED_MEDIA_ITEM_LIST.add(tmpSelectedItem);
@@ -133,9 +134,9 @@ public class SortByDateMediaPickerActivity extends Activity {
                                             item.RealUrl.toLowerCase().contains("jpeg") ||
                                             item.RealUrl.toLowerCase().contains("gif"))
                                         Constants.MEDIA_LIST_TYPE = 1;
-                                }
-                            }
-                        }
+                        //         }
+                        //     }
+                        // }
 
                         if (item.RealUrl.toLowerCase().contains("mp4") ||
                                 item.RealUrl.toLowerCase().contains("m4v") ||
@@ -803,32 +804,32 @@ public class SortByDateMediaPickerActivity extends Activity {
 
             initiateMediaListExpandableView();
             hideWaitingDialog();
+        }
+    }
 
-            Handler handler = new Handler() {};
+    public void expandChosenGroups() {
+        final Handler handler = new Handler() {};
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    for(int l =0; l < Constants.EXPAND_GROUPS.size(); l++){
+                int l = 0;
+                while (l < Constants.EXPAND_GROUPS.size()) {
                         if(expandableListView_container != null && expandableListView_container.getChildAt(Constants.EXPAND_GROUPS.get(l)) != null){
                             Constants.STEP = 0;
                             ExpandableListView ex = (ExpandableListView) expandableListView_container.getChildAt(Constants.EXPAND_GROUPS.get(l)).findViewById(R.id.expandableListView);
                             ex.expandGroup(0);
                         }
+                    l++;
                     }
                 }
-            }, 3000);
-
-
-        }
-
-
-
+        }, 1000);
     }
 
     public void initiateMediaListExpandableView(){
-        for(int i=0; i<mSortByDateMediaList.size(); i++) {
+        int i = 0;
+        while(i < mSortByDateMediaList.size()){
             boolean haveSelectedItems = false;
-            Log.v(TAG, "mSortByDateMediaList.size()= " + mSortByDateMediaList.size());
+            Constants.STEP = 0;
             View view = getLayoutInflater().inflate(R.layout.layout_expandable_sorted_photos, null, true);
             //
             final ExpandableListView expandableListView = (ExpandableListView) view.findViewById(R.id.expandableListView);
@@ -838,7 +839,6 @@ public class SortByDateMediaPickerActivity extends Activity {
             //Log.v(TAG, "expandableListTitle.length = " + expandableListTitle.length);
             Log.v(TAG, "expandableListTitle[0] = " + expandableListTitle[0]);
             ExpandableListAdapter expandableListAdapter = new CustomExpandableListAdapter(SortByDateMediaPickerActivity.this, expandableListTitle[0], expandableListDetail);
-            Log.v(TAG, "TEST: " + expandableListAdapter);
             expandableListView.setAdapter(expandableListAdapter);
             expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
 
@@ -863,19 +863,20 @@ public class SortByDateMediaPickerActivity extends Activity {
                         height +=numberOfRows*(imageW+expandableListView.getDividerHeight())+135;
                     }
                     expandableListView.setLayoutParams(new LinearLayout.LayoutParams(expandableListView.getWidth(), height));
-                    Toast.makeText(getApplicationContext(),
-                            expandableListTitle[0] + ". Height = " + height,
-                            Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getApplicationContext(),
+//                            expandableListTitle[0] + ". Height = " + height,
+//                            Toast.LENGTH_SHORT).show();
                 }
             });
-
-            for(int j=0; j<mSortByDateMediaList.get(i).mediaList.size(); j++){
+            int j = 0;
+            while(j < mSortByDateMediaList.get(i).mediaList.size()){
                 if(mSortByDateMediaList.get(i).mediaList.get(j).IsChecked){
                     //Log.v(TAG, "expandableListView.getCount() = " + expandableListView.getCount());
                     //expandableListView.expandGroup(0);
                     haveSelectedItems = true;
                     break;
                 }
+                j++;
             }
 
             expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
@@ -910,9 +911,9 @@ public class SortByDateMediaPickerActivity extends Activity {
                 Constants.EXPAND_GROUPS.add(expandableListView_container.getChildCount()-1);
             }
             //Log.v(TAG, "expandableListView_containter.size() = " + expandableListView_container.getChildCount());
+            i++;
         }
-
-
+        expandChosenGroups();
     }
 
     /**
@@ -1153,8 +1154,39 @@ public class SortByDateMediaPickerActivity extends Activity {
             if (s != null) {
                 Intent data = new Intent();
                 data.putExtra(Constants.MEDIA_RESULT, s);
+                setResult(Constants.MEDIA_RESULT_CODE, data);
 
-                constantsDestructor();
+                // Reset Constants
+                Constants.STEP = 0;
+                Constants.MEDIA_LIST_TYPE = 0;
+
+                //        if (Constants.SELECTED_MEDIA_ITEM_LIST != null) {
+                //            Constants.SELECTED_MEDIA_ITEM_LIST.clear();
+                //        } else {
+                //            Constants.SELECTED_MEDIA_ITEM_LIST = new ArrayList<>();
+                //        }
+
+                if (mMediaList != null) {
+                    mMediaList.clear();
+                } else {
+                    mMediaList = new ArrayList<>();
+                }
+
+                if (mSelectedMediaList != null) {
+                    mSelectedMediaList.clear();
+                } else {
+                    mSelectedMediaList = new ArrayList<>();
+                }
+
+                if(mSortByDateMediaList != null){
+                    mSortByDateMediaList.clear();
+                } else {
+                    mSortByDateMediaList = new ArrayList<>();
+                }
+
+                if(expandableListView_container.getChildCount() > 0){
+                    expandableListView_container.removeAllViews();
+                }
 
                 finish();
             }

@@ -51,7 +51,7 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
         Activity currentActivity = getCurrentActivity();
         if (currentActivity != null) {
 
-            Intent intent = new Intent(getReactApplicationContext(), MediaPickerActivity.class);
+            Intent intent = new Intent(getReactApplicationContext(), SortByDateMediaPickerActivity.class);
             intent.putExtra(Constants.MAX_UPLOADABLE_PHOTO, max_photo);
             intent.putExtra(Constants.MAX_UPLOADABLE_VIDEO, max_video);
             intent.putExtra(Constants.MAX_UPLOADABLE_VIDEO_DURATION, max_video_duration);
@@ -60,8 +60,8 @@ public class MediaHunterslogPickerModule extends ReactContextBaseJavaModule impl
 
             intent.putExtra(Constants.MEDIA_RESULT, selectedList);
 
-            if (MediaPickerActivity.mMediaList != null)
-                MediaPickerActivity.mMediaList.clear();
+            if (SortByDateMediaPickerActivity.mMediaList != null)
+                SortByDateMediaPickerActivity.mMediaList.clear();
 
             currentActivity.startActivityForResult(intent, Constants.MEDIA_RESULT_CODE);
         }

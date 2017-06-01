@@ -70,7 +70,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         deviceW = (int) Utils.convertPixelsToDp(displaymetrics.widthPixels, context);
         imageW = deviceWPx /3;
         //Log.v(TAG, "deviceW= " + deviceW + " | deviceH = " + deviceH);
-        Log.v(TAG, "expandableListDetail.size(): " + this.expandableListDetail.size());
 
         if(expandableListDetail != null && expandableListDetail.values().size() > 0){
             //Getting Collection of values from HashMap
@@ -116,7 +115,8 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
             LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(  ViewGroup.LayoutParams.WRAP_CONTENT,   ViewGroup.LayoutParams.WRAP_CONTENT);
             viewRow.setLayoutParams(linearLayoutParams);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(imageW, imageW);
-            for(int i =0; i < 3; i++){
+            int i = 0;
+            while(i < 3){
                 if(Constants.STEP < (mediaItemList.size()) && mediaItemList.get(Constants.STEP).RealUrl != null){
                     final MediaItem item = mediaItemList.get(Constants.STEP);
                     Log.v(TAG, "item.RealUrl: " + item.RealUrl);
@@ -158,24 +158,23 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                                 SelectedMediaItem tmpSelectedMediaItem = new SelectedMediaItem();
                                 tmpSelectedMediaItem.Id = item.OrderNumber;
                                 tmpSelectedMediaItem.MediaItem = item;
-                                Log.v(TAG, "tmpSelectedMediaItem.Id = " + tmpSelectedMediaItem.Id);
-                                Log.v(TAG, "tmpSelectedMediaItem.RealUrl = " + tmpSelectedMediaItem.MediaItem.RealUrl);
                                 ImageView itemImgSelected = (ImageView) v.findViewById(R.id.ic_selected);
-                                if(Constants.SELECTED_MEDIA_ITEM_LIST.size() == 0){
+                                if(Constants.SELECTED_MEDIA_ITEM_LIST.size() == 0 && !item.IsChecked){
                                     item.IsChecked = true;
                                     itemImgSelected.setVisibility(View.VISIBLE);
                                     Constants.SELECTED_MEDIA_ITEM_LIST.add(tmpSelectedMediaItem);
-                                    Log.v(TAG, "ADDED ITEM L1");
                                 } else {
                                     boolean isNew = true;
-                                    for(int j = 0; j < Constants.SELECTED_MEDIA_ITEM_LIST.size(); j++){
-                                        if(Constants.SELECTED_MEDIA_ITEM_LIST.get(j).Id == tmpSelectedMediaItem.Id){
+                                    int j1 = 0;
+                                    while( j1 < Constants.SELECTED_MEDIA_ITEM_LIST.size()){
+                                      if(Constants.SELECTED_MEDIA_ITEM_LIST.get(j1).MediaItem.RealUrl.equals(tmpSelectedMediaItem.MediaItem.RealUrl)){
                                             item.IsChecked = false;
                                             itemImgSelected.setVisibility(View.GONE);
-                                            Constants.SELECTED_MEDIA_ITEM_LIST.remove(j);
-                                            Log.v(TAG, "REMOVED ITEM L1");
+                                          Constants.SELECTED_MEDIA_ITEM_LIST.remove(Constants.SELECTED_MEDIA_ITEM_LIST.get(j1));
                                             isNew = false;
+                                            break;
                                         }
+                                      j1++;
                                     }
                                     if(isNew){
                                         item.IsChecked = true;
@@ -189,18 +188,18 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                                 SelectedMediaItem tmpSelectedMediaItem = new SelectedMediaItem();
                                 tmpSelectedMediaItem.Id = item.OrderNumber;
                                 tmpSelectedMediaItem.MediaItem = item;
-                                Log.v(TAG, "tmpSelectedMediaItem.Id = " + tmpSelectedMediaItem.Id);
-                                Log.v(TAG, "tmpSelectedMediaItem.MediaItem.RealUrl = " + tmpSelectedMediaItem.MediaItem.RealUrl);
                                 ImageView itemImgSelected = (ImageView) v.findViewById(R.id.ic_selected);
                                 boolean IsNew = true;
-                                for(int j = 0; j < Constants.SELECTED_MEDIA_ITEM_LIST.size(); j++){
-                                    if(Constants.SELECTED_MEDIA_ITEM_LIST.get(j).Id == tmpSelectedMediaItem.Id){
+                                int j2 = 0;
+                                while( j2 < Constants.SELECTED_MEDIA_ITEM_LIST.size()){
+                                  if(Constants.SELECTED_MEDIA_ITEM_LIST.get(j2).MediaItem.RealUrl.equals(tmpSelectedMediaItem.MediaItem.RealUrl)){
                                         item.IsChecked = false;
                                         itemImgSelected.setVisibility(View.GONE);
-                                        Constants.SELECTED_MEDIA_ITEM_LIST.remove(j);
+                                      Constants.SELECTED_MEDIA_ITEM_LIST.remove(Constants.SELECTED_MEDIA_ITEM_LIST.get(j2));
                                         IsNew = false;
-                                        Log.v(TAG, "REMOVED ITEM L2");
+                                        break;
                                     }
+                                  j2++;
                                 }
                                 if(IsNew){
                                     String tmpMessage;
@@ -242,8 +241,8 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                     viewRow.addView(viewItem);
                     Constants.STEP++;
                 }
+                i++;
             }
-
         }
 
         return convertView;
@@ -294,6 +293,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getGroupView(int listPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
+        Constants.STEP = 0;
         String listTitle = getGroup(listPosition) + " - " + getChildrenCount(listPosition) + " item";
         if(getChildrenCount(listPosition)>1){
             listTitle += "s";
@@ -307,6 +307,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                 .findViewById(R.id.listTitle);
         listTitleTextView.setTypeface(null, Typeface.BOLD);
         listTitleTextView.setText(listTitle);
+        Constants.STEP = 0;
         return convertView;
     }
 
