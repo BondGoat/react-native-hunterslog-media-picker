@@ -90,6 +90,12 @@ public class SortByDateMediaPickerActivity extends Activity {
             Constants.SELECTED_MEDIA_ITEM_LIST = new ArrayList<>();
         }
 
+        if(mMediaList != null){
+            mMediaList.clear();
+        } else {
+            mMediaList = new ArrayList<>();
+        }
+
         Intent receivedIntent = getIntent();
         if (receivedIntent != null) {
             if (receivedIntent.hasExtra(Constants.MAX_UPLOADABLE_PHOTO))
@@ -838,7 +844,7 @@ public class SortByDateMediaPickerActivity extends Activity {
             final String[] expandableListTitle = expandableListDetail.keySet().toArray(new String[expandableListDetail.keySet().size()]);
             //Log.v(TAG, "expandableListTitle.length = " + expandableListTitle.length);
             Log.v(TAG, "expandableListTitle[0] = " + expandableListTitle[0]);
-            ExpandableListAdapter expandableListAdapter = new CustomExpandableListAdapter(SortByDateMediaPickerActivity.this, expandableListTitle[0], expandableListDetail);
+            ExpandableListAdapter expandableListAdapter = new CustomExpandableListAdapter(SortByDateMediaPickerActivity.this, expandableListTitle[0], expandableListDetail, max_photo, max_video);
             expandableListView.setAdapter(expandableListAdapter);
             expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
 

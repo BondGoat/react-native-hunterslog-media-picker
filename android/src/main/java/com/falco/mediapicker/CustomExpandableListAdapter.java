@@ -46,17 +46,17 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     private HashMap<String, List<MediaItem>> expandableListDetail;
     private List<MediaItem> mediaItemList = new ArrayList<>();
     public final String TAG = CustomExpandableListAdapter.this.getClass().getSimpleName();
-
     //private final List<MediaItem> expandableListDetail;
-    public final int deviceW, deviceH, deviceWPx, deviceHPx, imageW;
-    final int max_photo = 10, max_video = 1, max_video_duration = 10;
+    public final int deviceW, deviceH, deviceWPx, deviceHPx, imageW, max_photo, max_video;
     Picasso picassoInstance;
     Dialog mDialog;
     public CustomExpandableListAdapter(Context context, String expandableListTitle,
-                                       HashMap<String, List<MediaItem>> expandableListDetail) {
+                                       HashMap<String, List<MediaItem>> expandableListDetail, int max_photo, int max_video) {
         this.context = context;
         this.expandableListTitle = expandableListTitle;
         this.expandableListDetail = expandableListDetail;
+        this.max_photo = max_photo;
+        this.max_video = max_video;
 
         picassoInstance = new Picasso.Builder(context)
                 .memoryCache(new LruCache(2 * 1024 * 1024))

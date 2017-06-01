@@ -11,7 +11,6 @@ import {
   ListView,
   ActivityIndicator,
 } from 'react-native';
-import Video from "react-native-video";
 import Bar from 'react-native-bar-collapsible';
 import _ from "lodash";
 
