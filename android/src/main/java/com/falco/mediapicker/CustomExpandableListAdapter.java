@@ -204,9 +204,9 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                                 if(IsNew){
                                     String tmpMessage;
                                     if(Constants.MEDIA_LIST_TYPE == 1){
-                                        tmpMessage = context.getResources().getString(R.string.txt_warning_photo).replace("#P", Constants.MAX_UPLOADABLE_PHOTO);
+                                        tmpMessage = context.getResources().getString(R.string.txt_warning_photo).replace("#P", String.valueOf(max_photo));
                                     } else {
-                                        tmpMessage = context.getResources().getString(R.string.txt_warning_video).replace("#V", Constants.MAX_UPLOADABLE_VIDEO);
+                                        tmpMessage = context.getResources().getString(R.string.txt_warning_video).replace("#V", String.valueOf(max_video));
                                     }
                                     showWarningDialog(context, tmpMessage);
                                 }
