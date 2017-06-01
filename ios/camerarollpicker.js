@@ -12,10 +12,16 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Video from "react-native-video";
+import Bar from 'react-native-bar-collapsible';
+import _ from "lodash";
 
 var tempDuration = [];
 var isFirstTime = true;
-
+var mDisplayedMediaCount = 0;
+var loadMoreActivationTimeOut = null;
+const DISPLAY_MORE_MEDIA_STEP_COUNT = 20
+const MAX_INIT_DISPLAYED_MEDIA_COUNT = 20;
+var mFetchMediaItemCount = MAX_INIT_DISPLAYED_MEDIA_COUNT;
 class CameraRollPicker extends Component {
   constructor(props) {
     super(props);
@@ -31,6 +37,7 @@ class CameraRollPicker extends Component {
 
   componentWillMount() {
     isFirstTime = true;
+    mDisplayedMediaCount = 0;
 
     var {width} = Dimensions.get('window');
     var {imageMargin, imagesPerRow, containerWidth} = this.props;
@@ -38,18 +45,33 @@ class CameraRollPicker extends Component {
     if(typeof containerWidth != "undefined") {
       width = containerWidth;
     }
-    this._imageSize = (width - (imagesPerRow + 1) * imageMargin) / imagesPerRow;
-
+    this._imageSize = ( width - 2 ) / imagesPerRow - (imageMargin * 2);
     this.fetch();
   }
 
   componentWillReceiveProps(nextProps) {
+    if(!_.isEmpty(nextProps.selected) && nextProps.selected.length > 0){
+      console.log("pass selected data and render...");
     this.setState({
       selected: nextProps.selected,
       dataSource: this.state.dataSource.cloneWithRows(
-        this._nEveryRow(this.state.images, this.props.imagesPerRow)
+          this.dividedByRowData(this.state.images, nextProps.selected)
       ),
     });
+    } else {
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows(
+          this.dividedByRowData(this.state.images, null)
+        ),
+      });
+    }
+  }
+
+  _onEndReached() {
+    console.log("_onEndReached");
+    if (!this.state.noMore) {
+       this.fetch();
+    }
   }
 
   fetch() {
@@ -59,24 +81,226 @@ class CameraRollPicker extends Component {
   }
 
   _fetch() {
-    var {groupTypes, assetType} = this.props;
+    clearTimeout(loadMoreActivationTimeOut);
+    loadMoreActivationTimeOut = setTimeout(() => {
+      console.log("current fetch count = " + mFetchMediaItemCount);
+      mFetchMediaItemCount += DISPLAY_MORE_MEDIA_STEP_COUNT;
+      var {groupTypes, assetType} = this.props;
+    
+      var fetchParams = {
+        first: mFetchMediaItemCount,
+        groupTypes: groupTypes,
+        assetType: assetType,
+      };
 
-    var fetchParams = {
-      first: 20,
-      groupTypes: groupTypes,
-      assetType: assetType,
+      if (Platform.OS === "android") {
+        // not supported in android
+        delete fetchParams.groupTypes;
+      }
+
+      if (this.state.lastCursor) {
+        fetchParams.after = this.state.lastCursor;
+      }
+
+      CameraRoll.getPhotos(fetchParams).then((data) => this._appendImages(data), (e) => console.log(e));
+    }, 1500);
+  }
+
+  NumberToTextMonth(numMonth){
+    var result = "ERROR";
+    if(numMonth != null && numMonth != "", numMonth != undefined){
+      switch (numMonth) {
+        case 0:
+          result = "JAN";
+          break;
+        case 1:
+          result = "FEB";
+          break;
+        case 2:
+          result = "MAR";
+          break;
+        case 3:
+          result = "APR";
+          break;
+        case 4:
+          result = "MAY";
+          break;
+        case 5:
+          result = "JUN";
+          break;
+        case 6:
+          result = "JUL";
+          break;
+        case 7:
+          result = "AUG";
+          break;
+        case 8:
+          result = "SEP";
+          break;
+        case 9:
+          result = "OCT";
+          break;
+        case 10:
+          result = "NOV";
+          break;
+        case 11:
+          result = "DEC";
+          break;
+      }
+    }
+    return result;
+  }
+
+  organizeMediaItems(mMediaList, selected){
+    console.log("organizeMediaItems");
+    var mSortByDateMedialist = [];
+    var currentItemCreatedTime = null;
+    var previousItemCreatedTime = null;
+    var previousFile = null;
+    var tmpMediaList = {
+      id: null,
+      mediaList: [],
+      IsExpanded: false
     };
+    var tmpMediaItem = {
+      id: 0,
+      type: null,
+      duration: 0,
+      realUrl: null,
+      location: {
+        latitude: null,
+        longitude: null,
+      },
+      isChecked: false,
+      createdAt: null,
+      isTrophyAlbum: false,
+      filename: null,
+      dimensions: {
+        height: 0,
+        width: 0
+      }
+    };
+      if(!_.isEmpty(mMediaList) && mMediaList.length > 0){
+        for(var i=0; i<mMediaList.length; i++){
+          var tmpCurrentItemCreatedTime = new Date(mMediaList[i].node.timestamp*1000);
+          currentItemCreatedTime = this.NumberToTextMonth(tmpCurrentItemCreatedTime.getMonth()) + " " + tmpCurrentItemCreatedTime.getDate() + ", " + tmpCurrentItemCreatedTime.getFullYear();
+          if(previousFile == null || previousFile.localeCompare(mMediaList[i].node.image.uri) != 0){
+            //new file need to be organized
+            if(previousItemCreatedTime == null || previousItemCreatedTime.localeCompare(currentItemCreatedTime) != 0){
+              previousItemCreatedTime = currentItemCreatedTime;
+              if(tmpMediaList.id != null){
+                mSortByDateMedialist.push(tmpMediaList);
+                tmpMediaList = {
+                  id: null,
+                  mediaList: [],
+                  IsExpanded: false
+                };
+              }
+              tmpMediaList = {
+                id: null,
+                mediaList: [],
+                IsExpanded: false
+              };
+              tmpMediaList.id = currentItemCreatedTime;
+              tmpMediaItem = {
+                id: i,
+                type: mMediaList[i].node.type,
+                duration: (!_.isEmpty(mMediaList[i].node.duration) ? mMediaList[i].node.duration : 0),
+                realUrl: mMediaList[i].node.image.uri,
+                location: {
+                  latitude: ((!_.isEmpty(mMediaList[i].node.location) && !_.isEmpty(mMediaList[i].node.location.latitude)) ? mMediaList[i].node.location.latitude : null ),
+                  longitude: ((!_.isEmpty(mMediaList[i].node.location) && !_.isEmpty(mMediaList[i].node.location.longitude)) ? mMediaList[i].node.location.longitude : null ),
+                },
+                isChecked: false,
+                createdAt: mMediaList[i].node.timestamp,
+                isTrophyAlbum: mMediaList[i].node.isTrophyAlbum,
+                filename: mMediaList[i].node.image.filename,
+                dimensions: {
+                  height: mMediaList[i].node.image.height,
+                  width: mMediaList[i].node.image.width,
+                }
+              };
+              //check pre-selected files
+              if(selected != null && selected.length > 0){
+                for(var k = 0; k < selected.length; k++){
+                  var url = null;
+                  if(!_.isEmpty(selected[k].realUrl)){
+                    url = selected[k].realUrl;
+                  } else if(!_.isEmpty(selected[k].image)){
+                    url = selected[k].image.uri;
+                  }
+                  if(tmpMediaItem.realUrl.localeCompare(url) == 0){
+                    tmpMediaItem.isChecked = true;
+                  }
+                }
+              }
+              tmpMediaList.mediaList.push(tmpMediaItem);
+            } else {
+              tmpMediaItem = {
+                id: i,
+                type: mMediaList[i].node.type,
+                duration: (!_.isEmpty(mMediaList[i].node.duration) ? mMediaList[i].node.duration : 0),
+                realUrl: mMediaList[i].node.image.uri,
+                location: {
+                  latitude: mMediaList[i].node.location.latitude,
+                  longitude: mMediaList[i].node.location.longitude,
+                },
+                isChecked: false,
+                createdAt: mMediaList[i].node.timestamp,
+                isTrophyAlbum: mMediaList[i].node.isTrophyAlbum,
+                filename: mMediaList[i].node.image.filename,
+                dimensions: {
+                  height: mMediaList[i].node.image.height,
+                  width: mMediaList[i].node.image.width,
+                }
+              };
+              // check pre-selected files
+              if(selected != null && selected.length > 0){
+                for(var k = 0; k < selected.length; k++){
+                  var url = null;
+                  if(!_.isEmpty(selected[k].realUrl)){
+                    url = selected[k].realUrl;
+                  } else if(!_.isEmpty(selected[k].image)){
+                    url = selected[k].image.uri;
+                  }
+                  if(tmpMediaItem.realUrl.localeCompare(url) == 0){
+                    tmpMediaItem.isChecked = true;
+                  }
+                }
+              }
+              tmpMediaList.mediaList.push(tmpMediaItem);
+            }
+            if(i==mMediaList.length-1){
+              previousItemCreatedTime = currentItemCreatedTime;
+              mSortByDateMedialist.push(tmpMediaList);
+              tmpMediaList = {
+                id: null,
+                mediaList: [],
+                IsExpanded: false
+              };
+            }
+            previousFile = mMediaList[i].node.image.uri;
+          } else if(i == (mMediaList.length-1) && tmpMediaList.mediaList.length > 0){
+            previousItemCreatedTime = currentItemCreatedTime;
+            mSortByDateMedialist.push(tmpMediaList);
+            tmpMediaList = {
+              id: null,
+              mediaList: [],
+              IsExpanded: false
+            };
+          }
+        }
+      }
+      
+      return mSortByDateMedialist;
+  }
 
-    if (Platform.OS === "android") {
-      // not supported in android
-      delete fetchParams.groupTypes;
+  dividedByRowData(listData, selected){
+    var mSortByDateMedialist = this.organizeMediaItems(listData, selected);
+    for(var i=0; i<mSortByDateMedialist.length; i++){
+      mSortByDateMedialist[i].mediaList = this._nEveryRow(mSortByDateMedialist[i].mediaList, this.props.imagesPerRow);
     }
-
-    if (this.state.lastCursor) {
-      fetchParams.after = this.state.lastCursor;
-    }
-
-    CameraRoll.getPhotos(fetchParams).then((data) => this._appendImages(data), (e) => console.log(e));
+    return mSortByDateMedialist;
   }
 
   _appendImages(data) {
@@ -93,21 +317,11 @@ class CameraRollPicker extends Component {
       newState.lastCursor = data.page_info.end_cursor;
 
       var listData = this.state.images.concat(assets);
-      if (isFirstTime) {
-        isFirstTime = false;
-        var item = {
-          node : null
-        };
-        // Add fake item to create Camera icon at the top
-        listData.splice(0,0,item);
-      }
 
-      newState.images = listData;
-      newState.dataSource = this.state.dataSource.cloneWithRows(
-        this._nEveryRow(newState.images, this.props.imagesPerRow)
-      );
+      var mSortByDateMedialist = this.dividedByRowData(listData, this.state.selected);
+      newState.images = listData;      
+      newState.dataSource = this.state.dataSource.cloneWithRows(mSortByDateMedialist);
     }
-
     this.setState(newState);
   }
 
@@ -138,7 +352,17 @@ class CameraRollPicker extends Component {
     var {scrollRenderAheadDistance, initialListSize, pageSize, removeClippedSubviews, imageMargin, backgroundColor} = this.props;
     return (
       <View
-        style={[styles.wrapper, {padding: imageMargin, paddingRight: 0, backgroundColor: backgroundColor},]}>
+        style={[styles.wrapper, {paddingBottom: 0, backgroundColor: backgroundColor},]}>
+        <View>
+          <TouchableOpacity
+            style={{marginBottom: imageMargin, marginRight: imageMargin}}
+            onPress={() => this._gotoCamera()}>
+            <Image
+              source={require('../img/ico_media_capture.png')}
+              style={{height: this._imageSize, width: this._imageSize}} >
+            </Image>
+          </TouchableOpacity>
+        </View>
         <ListView
           enableEmptySections={true}
           style={{flex: 1,}}
@@ -173,6 +397,66 @@ class CameraRollPicker extends Component {
     return <View />;
   }
 
+  _renderRow(rowData) {
+      var numberOfItems = 0;
+      for(var i=0; i<rowData.mediaList.length; i++){
+        numberOfItems += rowData.mediaList[i].length;
+      }
+      var strTitle = rowData.id + " - " + numberOfItems;
+      if(rowData.mediaList.length > 1){
+        strTitle += " items";
+      } else {
+        strTitle += " item";
+      }
+      var isShowOnStart = false;
+      if(mDisplayedMediaCount <= MAX_INIT_DISPLAYED_MEDIA_COUNT){
+        isShowOnStart = true;
+        mDisplayedMediaCount += numberOfItems;
+      }
+      if(!isShowOnStart){
+        for(var i=0;i<rowData.mediaList.length; i++){
+          if(rowData.mediaList[i].isChecked){
+            isShowOnStart = true;
+            break;
+          }
+        }
+      }
+      return(
+          <Bar
+            style={{backgroundColor: '#e87600'}}
+            title={strTitle}
+            collapsible={true}
+            showOnStart={isShowOnStart}
+            iconCollapsed='chevron-up'
+            iconOpened='chevron-down'
+            >
+            {this._renderListRowContent(rowData.mediaList)}
+          </Bar>
+      );
+  }
+
+  _renderListRowContent(mediaList){
+    return mediaList.map((item, key) => {
+      if (item == null) {
+        return <View></View>;
+      }
+      return (
+        <View style={styles.row}>
+          {this._renderRowContent(item)}
+        </View>
+      );
+    });
+  }
+
+  _renderRowContent(rowDataMediaList){
+    return rowDataMediaList.map((item, key) => {
+      if (item == null) {
+        return <View></View>;
+      }
+      return this._renderImage(item);
+    });
+  }
+
   _renderImage(item) {
     var {selectedMarker, imageMargin} = this.props;
 
@@ -182,46 +466,19 @@ class CameraRollPicker extends Component {
         source={require('../img/circle-check.png')}
       />;
 
-    if (null === item.node) {
-      return (
-        <TouchableOpacity
-          key={"FIRST"}
-          style={{marginBottom: imageMargin, marginRight: imageMargin}}
-          onPress={() => this._gotoCamera()}>
-          <Image
-            source={require('../img/ico_media_capture.png')}
-            style={{height: this._imageSize, width: this._imageSize}} >
-          </Image>
-        </TouchableOpacity>
-      );
-    }
-
     return (
-      <TouchableOpacity
-        key={item.node.image.uri}
-        style={{marginBottom: imageMargin, marginRight: imageMargin}}
-        onPress={event => this._selectImage(item.node)}>
-        <Image
-          source={{uri: item.node.image.uri}}
-          style={{height: this._imageSize, width: this._imageSize}} >
-          {this._renderPlayIcon(item.node.type)}
-          { (this._arrayObjectIndexOf(this.state.selected, item.node.image.uri) >= 0) ? marker : null }
-        </Image>
-      </TouchableOpacity>
-    );
-  }
-
-  _renderRow(rowData) {
-    var items = rowData.map((item) => {
-      if (item === null) {
-        return null;
-      }
-      return this._renderImage(item);
-    });
-
-    return (
-      <View style={styles.row}>
-        {items}
+	  <View>
+		  <TouchableOpacity
+			key={item.id}
+			style={{marginBottom: imageMargin, marginRight: imageMargin}}
+			onPress={event => this._selectImage(item)}>
+			<Image
+			  source={{uri: item.realUrl}}
+			  style={{height: this._imageSize, width: this._imageSize, margin: imageMargin}} >
+			  {this._renderPlayIcon(item.type)}
+			  { (item.isChecked) ? marker : null }
+			</Image>
+		  </TouchableOpacity>
       </View>
     );
   }
@@ -237,18 +494,8 @@ class CameraRollPicker extends Component {
     return null;
   }
 
-  _onEndReached() {
-    if (!this.state.noMore) {
-      this.fetch();
-    }
-  }
-
-  _selectImage(imageNode) {
-    var index = this._arrayDurationIndexOf(imageNode.image.uri);
-    if (index >= 0) {
-      imageNode.duration = tempDuration[index].duration;
-    }
-    this.props.onSelectedImages(imageNode);
+  _selectImage(item) {
+    this.props.onSelectedImages(item);
   }
 
   _nEveryRow(data, n) {
@@ -264,9 +511,6 @@ class CameraRollPicker extends Component {
     }
 
     if (temp.length > 0) {
-      while (temp.length !== n) {
-        temp.push(null);
-      }
       result.push(temp);
     }
 
@@ -276,14 +520,16 @@ class CameraRollPicker extends Component {
   _arrayObjectIndexOf(array, value) {
     var index = -1;
     for (var i = 0; i < array.length; i++) {
-      if (array[i] != null && array[i].image.uri == value) {
+      if(!_.isEmpty(array[i])){
+        if (!_.isEmpty(array[i].image) && array[i].image.uri.localeCompare(value) == 0) {
         return i;
+        } else if (!_.isEmpty(array[i].realUrl) && array[i].realUrl.localeCompare(value) == 0) {
+          return i;
+        }
       }
     }
-
     return index;
   }
-
 }
 
 const styles = StyleSheet.create({
@@ -293,6 +539,10 @@ const styles = StyleSheet.create({
   row:{
     flexDirection: 'row',
     flex: 1,
+  },
+  column: {
+    flexDirection: 'column',
+    flex: 1
   },
   marker: {
     position: 'absolute',
