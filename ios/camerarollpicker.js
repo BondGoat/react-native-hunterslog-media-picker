@@ -326,6 +326,10 @@ class CameraRollPicker extends Component {
       newState.images = listData;      
       newState.sortedImages = mSortByDateMedialist;
       newState.dataSource = this.state.dataSource.cloneWithRows(mSortByDateMedialist);
+    } else {
+      var mSortByDateMedialist = this.dividedByRowData(this.state.images, this.state.selected);
+      newState.sortedImages = mSortByDateMedialist;
+      newState.dataSource = this.state.dataSource.cloneWithRows(mSortByDateMedialist);
     }
     this.setState(newState);
   }
@@ -494,8 +498,9 @@ class CameraRollPicker extends Component {
                 size="large"
                 style={{ flex: 1 }}
                 />;
+    } else {
+      return null;
     }
-    return null;
   }
 
   _selectImage(item) {
