@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"    android:splitMotionEvents="false">
     <ExpandableListView
         android:id="@+id/expandableListView"
         android:layout_height="match_parent"
@@ -11,5 +11,18 @@
         android:layoutDirection="rtl"
         android:background="@android:color/white"
         android:divider="@android:color/white"
+        android:fadeScrollbars="false"
+        android:scrollbars="none"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:scrollingCache="false"
+        android:fastScrollEnabled="false"
+        android:smoothScrollbar="false"
+        android:transcriptMode="disabled"
+        android:isScrollContainer="false"
+        android:nestedScrollingEnabled="false"
+        android:listSelector="@android:color/transparent"
+        android:clickable="false"
+        android:splitMotionEvents="false"
         android:groupIndicator="@drawable/ico_expandablelistview_custom_arrow" />
 </LinearLayout>

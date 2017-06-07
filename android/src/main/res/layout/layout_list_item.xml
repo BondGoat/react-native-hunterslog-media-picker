@@ -5,5 +5,5 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layoutDirection="ltr"
-    android:background="@android:color/white">
+    android:background="@android:color/white"    android:splitMotionEvents="false">
 </LinearLayout>

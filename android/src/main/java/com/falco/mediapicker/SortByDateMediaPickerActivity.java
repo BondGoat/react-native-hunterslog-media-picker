@@ -25,6 +25,7 @@ import android.text.format.DateFormat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -33,7 +34,6 @@ import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.squareup.picasso.LruCache;
@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class SortByDateMediaPickerActivity extends Activity {
+    private boolean isScrollEnabled = true;
     ProgressDialog mProgressDialog;
     Picasso picassoInstance;
     Button btnBack, btnAdd, btnCapture;
@@ -831,6 +832,18 @@ public class SortByDateMediaPickerActivity extends Activity {
         }, 1000);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        // TODO Auto-generated method stub
+
+        if(event.getPointerCount() > 1) {
+            Log.v(TAG, "Multitouch detected!");
+            return true;
+        }
+        else
+            return super.onTouchEvent(event);
+    }
+
     public void initiateMediaListExpandableView(){
         int i = 0;
         while(i < mSortByDateMediaList.size()){
@@ -846,10 +859,17 @@ public class SortByDateMediaPickerActivity extends Activity {
             Log.v(TAG, "expandableListTitle[0] = " + expandableListTitle[0]);
             ExpandableListAdapter expandableListAdapter = new CustomExpandableListAdapter(SortByDateMediaPickerActivity.this, expandableListTitle[0], expandableListDetail, max_photo, max_video);
             expandableListView.setAdapter(expandableListAdapter);
+            expandableListView.setFocusable(false);
+            expandableListView.setFocusableInTouchMode(false);
+            expandableListView.setOnTouchListener(new View.OnTouchListener() {
+                public boolean onTouch(View v, MotionEvent event) {
+                    return (event.getAction() == MotionEvent.ACTION_MOVE);
+                }
+            });
             expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
 
                 @Override
-                public void onGroupExpand(int groupPosition) {
+                public void onGroupExpand(int groupPosition) {                    
                     Constants.STEP = 0;
                     Log.v(TAG, "imageW: " + imageW);
                     int numberOfRows;

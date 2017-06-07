@@ -4,9 +4,7 @@ package com.falco.mediapicker;
  * Created by pqthuy on 04/24/2017.
  */
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,27 +12,19 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.Uri;
-import android.provider.MediaStore;
-import android.provider.SyncStateContract;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
@@ -47,28 +37,23 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     private List<MediaItem> mediaItemList = new ArrayList<>();
     public final String TAG = CustomExpandableListAdapter.this.getClass().getSimpleName();
     //private final List<MediaItem> expandableListDetail;
-    public final int deviceW, deviceH, deviceWPx, deviceHPx, imageW, max_photo, max_video;
+    public final int imageW, max_photo, max_video;
     Picasso picassoInstance;
     Dialog mDialog;
     public CustomExpandableListAdapter(Context context, String expandableListTitle,
-                                       HashMap<String, List<MediaItem>> expandableListDetail, int max_photo, int max_video) {
+                                       HashMap<String, List<MediaItem>> expandableListDetail, int max_photo, int max_video, int imageW) {
         this.context = context;
         this.expandableListTitle = expandableListTitle;
         this.expandableListDetail = expandableListDetail;
         this.max_photo = max_photo;
         this.max_video = max_video;
+        this.imageW = imageW;
 
         picassoInstance = new Picasso.Builder(context)
                 .memoryCache(new LruCache(2 * 1024 * 1024))
                 .addRequestHandler(new VideoRequestHandler())
                 .build();
 
-        DisplayMetrics displaymetrics = Resources.getSystem().getDisplayMetrics();
-        deviceWPx = displaymetrics.widthPixels;
-        deviceHPx = displaymetrics.heightPixels;
-        deviceH = (int) Utils.convertPixelsToDp(displaymetrics.heightPixels, context);
-        deviceW = (int) Utils.convertPixelsToDp(displaymetrics.widthPixels, context);
-        imageW = deviceWPx /3;
         //Log.v(TAG, "deviceW= " + deviceW + " | deviceH = " + deviceH);
 
         if(expandableListDetail != null && expandableListDetail.values().size() > 0){
@@ -109,8 +94,8 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
         LayoutInflater layoutInflater = (LayoutInflater) this.context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        if (convertView == null) {
-            convertView = layoutInflater.inflate(R.layout.layout_list_item, null);
+        convertView = layoutInflater.inflate(R.layout.layout_list_item, null);
+        if (parent == null || parent.getChildCount() <= mediaItemList.size()) {
             LinearLayout viewRow = (LinearLayout) convertView.findViewById(R.id.ll_rowItem);
             LinearLayout.LayoutParams linearLayoutParams = new LinearLayout.LayoutParams(  ViewGroup.LayoutParams.WRAP_CONTENT,   ViewGroup.LayoutParams.WRAP_CONTENT);
             viewRow.setLayoutParams(linearLayoutParams);
@@ -307,7 +292,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                 .findViewById(R.id.listTitle);
         listTitleTextView.setTypeface(null, Typeface.BOLD);
         listTitleTextView.setText(listTitle);
-        Constants.STEP = 0;
         return convertView;
     }
 

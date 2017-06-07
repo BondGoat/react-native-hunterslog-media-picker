@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   ListView,
   ActivityIndicator,
+  InteractionManager,
 } from 'react-native';
 import Bar from 'react-native-bar-collapsible';
 import _ from "lodash";
@@ -25,7 +26,9 @@ class CameraRollPicker extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      isLoading: false,
       images: [],
+      sortedImages: [],
       selected: this.props.selected,
       lastCursor: null,
       loadingMore: false,
@@ -49,26 +52,22 @@ class CameraRollPicker extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if(!_.isEmpty(nextProps.selected) && nextProps.selected.length > 0){
-      console.log("pass selected data and render...");
+    mDisplayedMediaCount = 0;
+    console.log("CameraRollPicker componentWillReceiveProps");
     this.setState({
+      isLoading: false,
       selected: nextProps.selected,
-      dataSource: this.state.dataSource.cloneWithRows(
-          this.dividedByRowData(this.state.images, nextProps.selected)
-      ),
     });
-    } else {
-      this.setState({
-        dataSource: this.state.dataSource.cloneWithRows(
-          this.dividedByRowData(this.state.images, null)
-        ),
+
+    InteractionManager.runAfterInteractions(() => {
+      this._fetch();
       });
     }
-  }
 
   _onEndReached() {
     console.log("_onEndReached");
     if (!this.state.noMore) {
+       mFetchMediaItemCount += DISPLAY_MORE_MEDIA_STEP_COUNT;
        this.fetch();
     }
   }
@@ -80,10 +79,10 @@ class CameraRollPicker extends Component {
   }
 
   _fetch() {
-    clearTimeout(loadMoreActivationTimeOut);
-    loadMoreActivationTimeOut = setTimeout(() => {
+    console.log("_fetch");
+    console.log("clear old fetch timeout");
+    InteractionManager.runAfterInteractions(() => {
       console.log("current fetch count = " + mFetchMediaItemCount);
-      mFetchMediaItemCount += DISPLAY_MORE_MEDIA_STEP_COUNT;
       var {groupTypes, assetType} = this.props;
     
       var fetchParams = {
@@ -102,7 +101,7 @@ class CameraRollPicker extends Component {
       }
 
       CameraRoll.getPhotos(fetchParams).then((data) => this._appendImages(data), (e) => console.log(e));
-    }, 1500);
+    });
   }
 
   NumberToTextMonth(numMonth){
@@ -180,12 +179,18 @@ class CameraRollPicker extends Component {
       }
     };
       if(!_.isEmpty(mMediaList) && mMediaList.length > 0){
+        console.log("mMediaList.length = " + mMediaList.length);
+        //SORT BY DATE
+        mMediaList.sort((a,b) => {
+          return b.node.timestamp - a.node.timestamp;
+        });
+        //
         for(var i=0; i<mMediaList.length; i++){
           var tmpCurrentItemCreatedTime = new Date(mMediaList[i].node.timestamp*1000);
           currentItemCreatedTime = this.NumberToTextMonth(tmpCurrentItemCreatedTime.getMonth()) + " " + tmpCurrentItemCreatedTime.getDate() + ", " + tmpCurrentItemCreatedTime.getFullYear();
           if(previousFile == null || previousFile.localeCompare(mMediaList[i].node.image.uri) != 0){
             //new file need to be organized
-            if(previousItemCreatedTime == null || previousItemCreatedTime.localeCompare(currentItemCreatedTime) != 0){
+            if(previousItemCreatedTime == null || previousItemCreatedTime != currentItemCreatedTime){
               previousItemCreatedTime = currentItemCreatedTime;
               if(tmpMediaList.id != null){
                 mSortByDateMedialist.push(tmpMediaList);
@@ -319,6 +324,7 @@ class CameraRollPicker extends Component {
 
       var mSortByDateMedialist = this.dividedByRowData(listData, this.state.selected);
       newState.images = listData;      
+      newState.sortedImages = mSortByDateMedialist;
       newState.dataSource = this.state.dataSource.cloneWithRows(mSortByDateMedialist);
     }
     this.setState(newState);
@@ -372,7 +378,8 @@ class CameraRollPicker extends Component {
           renderFooter={this._renderFooterSpinner.bind(this)}
           onEndReached={this._onEndReached.bind(this)}
           dataSource={this.state.dataSource}
-          renderRow={rowData => this._renderRow(rowData)} />
+          renderRow={rowData => this._renderRow(rowData)}
+        />
       </View>
     );
   }
@@ -397,41 +404,39 @@ class CameraRollPicker extends Component {
   }
 
   _renderRow(rowData) {
-      var numberOfItems = 0;
-      for(var i=0; i<rowData.mediaList.length; i++){
-        numberOfItems += rowData.mediaList[i].length;
-      }
-      var strTitle = rowData.id + " - " + numberOfItems;
-      if(rowData.mediaList.length > 1){
-        strTitle += " items";
-      } else {
-        strTitle += " item";
-      }
-      var isShowOnStart = false;
-      if(mDisplayedMediaCount <= MAX_INIT_DISPLAYED_MEDIA_COUNT){
-        isShowOnStart = true;
-        mDisplayedMediaCount += numberOfItems;
-      }
-      if(!isShowOnStart){
-        for(var i=0;i<rowData.mediaList.length; i++){
-          if(rowData.mediaList[i].isChecked){
-            isShowOnStart = true;
-            break;
-          }
+    var numberOfItems = 0;
+    for(var i=0; i<rowData.mediaList.length; i++){
+      numberOfItems += rowData.mediaList[i].length;
+    }
+    var strTitle = rowData.id + " - " + numberOfItems + " item";
+    if(numberOfItems > 1){
+      strTitle = strTitle + "s";
+    }
+    var isShowOnStart = false;
+    if(mDisplayedMediaCount <= MAX_INIT_DISPLAYED_MEDIA_COUNT){
+      isShowOnStart = true;
+      mDisplayedMediaCount += numberOfItems;
+    }
+    if(!isShowOnStart){
+      for(var i=0;i<rowData.mediaList.length; i++){
+        if(rowData.mediaList[i].isChecked){
+          isShowOnStart = true;
+          break;
         }
       }
-      return(
-          <Bar
-            style={{backgroundColor: '#e87600'}}
-            title={strTitle}
-            collapsible={true}
-            showOnStart={isShowOnStart}
-            iconCollapsed='chevron-up'
-            iconOpened='chevron-down'
-            >
-            {this._renderListRowContent(rowData.mediaList)}
-          </Bar>
-      );
+    }
+    return(
+        <Bar
+          style={{backgroundColor: '#e87600'}}
+          title={strTitle}
+          collapsible={true}
+          showOnStart={isShowOnStart}
+          iconCollapsed='chevron-up'
+          iconOpened='chevron-down'
+          >
+          {this._renderListRowContent(rowData.mediaList)}
+        </Bar>
+    );
   }
 
   _renderListRowContent(mediaList){
@@ -494,7 +499,9 @@ class CameraRollPicker extends Component {
   }
 
   _selectImage(item) {
-    this.props.onSelectedImages(item);
+    this.setState({isLoading: true}, () => {
+      this.props.onSelectedImages(item);
+    });
   }
 
   _nEveryRow(data, n) {

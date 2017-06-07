@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
-    tools:context=".SortByDateMediaPickerActivity">
+    tools:context=".SortByDateMediaPickerActivity"    android:splitMotionEvents="false">
 
     <RelativeLayout
         android:id="@+id/layoutHeader"
@@ -14,7 +14,7 @@
         android:layout_alignParentTop="true"
         android:background="@color/bg_hunterslog"
         android:paddingLeft="10dp"
-        android:paddingRight="5dp">
+        android:paddingRight="5dp"        android:splitMotionEvents="false">
 
         <Button
             android:id="@+id/btnBack"
@@ -49,7 +49,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/layoutHeader">
+        android:layout_below="@+id/layoutHeader"        android:splitMotionEvents="false">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -65,6 +65,7 @@
                 android:orientation="vertical"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
+                android:splitMotionEvents="false"
                 android:id="@+id/expandableListView_container">
         </LinearLayout>
         </LinearLayout>
