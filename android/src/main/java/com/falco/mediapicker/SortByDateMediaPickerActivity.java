@@ -857,7 +857,7 @@ public class SortByDateMediaPickerActivity extends Activity {
             final String[] expandableListTitle = expandableListDetail.keySet().toArray(new String[expandableListDetail.keySet().size()]);
             //Log.v(TAG, "expandableListTitle.length = " + expandableListTitle.length);
             Log.v(TAG, "expandableListTitle[0] = " + expandableListTitle[0]);
-            ExpandableListAdapter expandableListAdapter = new CustomExpandableListAdapter(SortByDateMediaPickerActivity.this, expandableListTitle[0], expandableListDetail, max_photo, max_video);
+            ExpandableListAdapter expandableListAdapter = new CustomExpandableListAdapter(SortByDateMediaPickerActivity.this, expandableListTitle[0], expandableListDetail, max_photo, max_video, imageW);
             expandableListView.setAdapter(expandableListAdapter);
             expandableListView.setFocusable(false);
             expandableListView.setFocusableInTouchMode(false);
