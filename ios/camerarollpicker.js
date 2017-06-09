@@ -57,9 +57,7 @@ class CameraRollPicker extends Component {
     this.setState({
       isLoading: false,
       selected: nextProps.selected,
-    });
-
-    InteractionManager.runAfterInteractions(() => {
+    },() => {
       this._fetch();
       });
     }
@@ -106,7 +104,7 @@ class CameraRollPicker extends Component {
 
   NumberToTextMonth(numMonth){
     var result = "ERROR";
-    if(numMonth != null && numMonth != "", numMonth != undefined){
+    if(numMonth != null && numMonth != "" && numMonth != undefined){
       switch (numMonth) {
         case 0:
           result = "JAN";
@@ -331,7 +329,9 @@ class CameraRollPicker extends Component {
       newState.sortedImages = mSortByDateMedialist;
       newState.dataSource = this.state.dataSource.cloneWithRows(mSortByDateMedialist);
     }
-    this.setState(newState);
+    InteractionManager.runAfterInteractions(() => {
+      this.setState(newState);
+    });
   }
 
   _arrayDurationIndexOf(uri) {
@@ -504,9 +504,9 @@ class CameraRollPicker extends Component {
   }
 
   _selectImage(item) {
-    this.setState({isLoading: true}, () => {
+    //this.setState({isLoading: true}, () => {
       this.props.onSelectedImages(item);
-    });
+    //});
   }
 
   _nEveryRow(data, n) {
