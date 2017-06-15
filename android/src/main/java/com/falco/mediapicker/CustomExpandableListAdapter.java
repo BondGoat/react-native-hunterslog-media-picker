@@ -129,8 +129,10 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                             Log.v(TAG, "PRESSED ITEM: " + item.RealUrl);
                             if(Constants.MEDIA_LIST_TYPE == 0){
                                 if (isPhoto(item)){
+                                    Constants.isCaptureVideo = false;
                                     Constants.MEDIA_LIST_TYPE = 1;
                                 } else {
+                                    Constants.isCaptureVideo = true;
                                     Constants.MEDIA_LIST_TYPE = 2;
                                 }
                             } else if((!isPhoto(item) && Constants.MEDIA_LIST_TYPE == 1) ||
@@ -198,28 +200,31 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                             }
                             Log.v(TAG, "Constants.SELECTED_MEDIA_ITEM_LIST.size() = " + Constants.SELECTED_MEDIA_ITEM_LIST.size());
                             if(Constants.SELECTED_MEDIA_ITEM_LIST.size() ==0){
+                                Constants.isCaptureVideo = true;
                                 Constants.MEDIA_LIST_TYPE = 0;
                             }
                         }
                     });
 
                     if (isPhoto) {
+                        Constants.isCaptureVideo = false;
                         if (item.RealUrl.toLowerCase().contains("http") || item.RealUrl.toLowerCase().contains("https")) {
                             picassoInstance.with(context)
                                     .load(Uri.parse(item.RealUrl))
-                                    .resize(imageW/2, imageW/2)
+                                    .resize(imageW/3, imageW/3)
                                     .centerCrop()
                                     .into(imgView);
                         } else {
                             picassoInstance.with(context)
                                     .load(item.RealUrl)
-                                    .resize(imageW/2, imageW/2)
+                                    .resize(imageW/3, imageW/3)
                                     .centerCrop()
                                     .into(imgView);
                         }
                     } else {
+                        Constants.isCaptureVideo = true;
                         picassoInstance.load(VideoRequestHandler.SCHEME_VIEDEO + ":" + ((item.RealUrl.toLowerCase().contains("file://")) ? item.RealUrl.replace("file://", "") : item.RealUrl))
-                                .resize(imageW/2, imageW/2)
+                                .resize(imageW/3, imageW/3)
                                 .centerCrop()
                                 .into(imgView);
                     }
@@ -229,7 +234,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                 i++;
             }
         }
-
         return convertView;
     }
 
@@ -279,10 +283,8 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     public View getGroupView(int listPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
         Constants.STEP = 0;
-        String listTitle = getGroup(listPosition) + " - " + getChildrenCount(listPosition) + " item";
-        if(getChildrenCount(listPosition)>1){
-            listTitle += "s";
-        }
+        String listTitle = getGroup(listPosition).toString();
+
         if (convertView == null) {
             LayoutInflater layoutInflater = (LayoutInflater) this.context.
                     getSystemService(Context.LAYOUT_INFLATER_SERVICE);

@@ -67,6 +67,10 @@ class CameraRollPicker extends Component {
     if (!this.state.noMore) {
        mFetchMediaItemCount += DISPLAY_MORE_MEDIA_STEP_COUNT;
        this.fetch();
+    } else {
+      this.setState({
+        loadingMore: false
+      });
     }
   }
 
@@ -104,45 +108,43 @@ class CameraRollPicker extends Component {
 
   NumberToTextMonth(numMonth){
     var result = "ERROR";
-    if(numMonth != null && numMonth != "" && numMonth != undefined){
-      switch (numMonth) {
-        case 0:
-          result = "JAN";
-          break;
-        case 1:
-          result = "FEB";
-          break;
-        case 2:
-          result = "MAR";
-          break;
-        case 3:
-          result = "APR";
-          break;
-        case 4:
-          result = "MAY";
-          break;
-        case 5:
-          result = "JUN";
-          break;
-        case 6:
-          result = "JUL";
-          break;
-        case 7:
-          result = "AUG";
-          break;
-        case 8:
-          result = "SEP";
-          break;
-        case 9:
-          result = "OCT";
-          break;
-        case 10:
-          result = "NOV";
-          break;
-        case 11:
-          result = "DEC";
-          break;
-      }
+    switch (numMonth) {
+      case 0:
+        result = "JAN";
+        break;
+      case 1:
+        result = "FEB";
+        break;
+      case 2:
+        result = "MAR";
+        break;
+      case 3:
+        result = "APR";
+        break;
+      case 4:
+        result = "MAY";
+        break;
+      case 5:
+        result = "JUN";
+        break;
+      case 6:
+        result = "JUL";
+        break;
+      case 7:
+        result = "AUG";
+        break;
+      case 8:
+        result = "SEP";
+        break;
+      case 9:
+        result = "OCT";
+        break;
+      case 10:
+        result = "NOV";
+        break;
+      case 11:
+        result = "DEC";
+        break;
     }
     return result;
   }
@@ -222,20 +224,7 @@ class CameraRollPicker extends Component {
                   width: mMediaList[i].node.image.width,
                 }
               };
-              //check pre-selected files
-              if(selected != null && selected.length > 0){
-                for(var k = 0; k < selected.length; k++){
-                  var url = null;
-                  if(!_.isEmpty(selected[k].realUrl)){
-                    url = selected[k].realUrl;
-                  } else if(!_.isEmpty(selected[k].image)){
-                    url = selected[k].image.uri;
-                  }
-                  if(tmpMediaItem.realUrl.localeCompare(url) == 0){
-                    tmpMediaItem.isChecked = true;
-                  }
-                }
-              }
+              
               tmpMediaList.mediaList.push(tmpMediaItem);
             } else {
               tmpMediaItem = {
@@ -255,21 +244,7 @@ class CameraRollPicker extends Component {
                   height: mMediaList[i].node.image.height,
                   width: mMediaList[i].node.image.width,
                 }
-              };
-              // check pre-selected files
-              if(selected != null && selected.length > 0){
-                for(var k = 0; k < selected.length; k++){
-                  var url = null;
-                  if(!_.isEmpty(selected[k].realUrl)){
-                    url = selected[k].realUrl;
-                  } else if(!_.isEmpty(selected[k].image)){
-                    url = selected[k].image.uri;
-                  }
-                  if(tmpMediaItem.realUrl.localeCompare(url) == 0){
-                    tmpMediaItem.isChecked = true;
-                  }
-                }
-              }
+              };              
               tmpMediaList.mediaList.push(tmpMediaItem);
             }
             if(i==mMediaList.length-1){
@@ -412,10 +387,9 @@ class CameraRollPicker extends Component {
     for(var i=0; i<rowData.mediaList.length; i++){
       numberOfItems += rowData.mediaList[i].length;
     }
-    var strTitle = rowData.id + " - " + numberOfItems + " item";
-    if(numberOfItems > 1){
-      strTitle = strTitle + "s";
-    }
+
+    var strTitle = rowData.id;
+
     var isShowOnStart = false;
     if(mDisplayedMediaCount <= MAX_INIT_DISPLAYED_MEDIA_COUNT){
       isShowOnStart = true;
@@ -466,28 +440,30 @@ class CameraRollPicker extends Component {
   }
 
   _renderImage(item) {
-    var {selectedMarker, imageMargin} = this.props;
-
-    var marker = selectedMarker ? selectedMarker :
-      <Image
-        style={[styles.marker, {width: 25, height: 25, right: imageMargin + 5},]}
-        source={require('../img/circle-check.png')}
-      />;
+    var {selectedMarker, imageMargin, max_photo, max_video} = this.props;
+    var mediaType = 2; // Photo or Video;
+    var selectedItemCount = 0;
+    if(this.state.selected && this.state.selected.length > 0){
+      selectedItemCount = this.state.selected.length;
+      if(this.state.selected[0].type.includes('Photo')){
+        mediaType = 0; // Photo
+      } else {
+        mediaType = 1; // Video
+      }
+    }
 
     return (
-	  <View>
-		  <TouchableOpacity
-			key={item.id}
-			style={{marginBottom: imageMargin, marginRight: imageMargin}}
-			onPress={event => this._selectImage(item)}>
-			<Image
-			  source={{uri: item.realUrl}}
-			  style={{height: this._imageSize, width: this._imageSize, margin: imageMargin}} >
-			  {this._renderPlayIcon(item.type)}
-			  { (item.isChecked) ? marker : null }
-			</Image>
-		  </TouchableOpacity>
-      </View>
+      <MediaItem
+        maxVideo={max_video}
+        maxPhoto={max_photo}
+        selectedItemCount={selectedItemCount}
+        mediaType={mediaType}
+        item={item}
+        imageSize={this._imageSize}
+        imageMargin={imageMargin}
+        selectedMarker={selectedMarker}
+        onSelectedImages={(item) => {this.props.onSelectedImages(item)}}
+      />
     );
   }
 

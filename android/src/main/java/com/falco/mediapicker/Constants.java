@@ -35,4 +35,5 @@ public class Constants {
     public static int MEDIA_LIST_TYPE = 0;
     public static List<SelectedMediaItem> SELECTED_MEDIA_ITEM_LIST = new ArrayList<SelectedMediaItem>();
     public static List<Integer> EXPAND_GROUPS = new ArrayList<>();
+    public static boolean isCaptureVideo = true;
 }
