@@ -13,6 +13,7 @@ import {
   InteractionManager,
 } from 'react-native';
 import Bar from 'react-native-bar-collapsible';
+import MediaItem from './mediaitem';
 import _ from "lodash";
 
 var tempDuration = [];
