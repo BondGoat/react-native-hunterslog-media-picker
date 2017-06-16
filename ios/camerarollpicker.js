@@ -225,7 +225,22 @@ class CameraRollPicker extends Component {
                   width: mMediaList[i].node.image.width,
                 }
               };
-              
+              //check pre-selected files
+              if(selected != null && selected.length > 0){
+                for(var k = 0; k < selected.length; k++){
+                  var url = null;
+                  if(!_.isEmpty(selected[k].realUrl)){
+                    url = selected[k].realUrl;
+                  } else if(!_.isEmpty(selected[k].image)){
+                    url = selected[k].image.uri;
+                  }
+                  if(tmpMediaItem.realUrl.localeCompare(url) == 0){
+                    tmpMediaItem.isChecked = true;
+                    console.log("CHECKED ITEM L1: " + tmpMediaItem.realUrl);
+                  }
+                }
+              }
+              //
               tmpMediaList.mediaList.push(tmpMediaItem);
             } else {
               tmpMediaItem = {
@@ -246,6 +261,22 @@ class CameraRollPicker extends Component {
                   width: mMediaList[i].node.image.width,
                 }
               };              
+              // check pre-selected files
+              if(selected != null && selected.length > 0){
+                for(var k = 0; k < selected.length; k++){
+                  var url = null;
+                  if(!_.isEmpty(selected[k].realUrl)){
+                    url = selected[k].realUrl;
+                  } else if(!_.isEmpty(selected[k].image)){
+                    url = selected[k].image.uri;
+                  }
+                  if(tmpMediaItem.realUrl.localeCompare(url) == 0){
+                    tmpMediaItem.isChecked = true;
+                    console.log("CHECKED ITEM L2: " + tmpMediaItem.realUrl);
+                  }
+                }
+              }
+              //
               tmpMediaList.mediaList.push(tmpMediaItem);
             }
             if(i==mMediaList.length-1){
