@@ -283,6 +283,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     public View getGroupView(int listPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
         Constants.STEP = 0;
+
         String listTitle = getGroup(listPosition).toString();
 
         if (convertView == null) {

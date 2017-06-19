@@ -66,7 +66,6 @@ public class SortByDateMediaPickerActivity extends Activity {
     String videoLat;// Save video lat code after take photo and send it to mSelectedMediaList
     String videoLong;// Save video long code after take photo and send it to mSelectedMediaList
     int deviceW, deviceH, imageW, deviceWPx, deviceHPx;
-    boolean isCaptureVideo = true;
 
     public static List<MediaItem> mSelectedMediaList = new ArrayList<>();
     public static List<MediaItem> mMediaList = new ArrayList<>();
@@ -106,7 +105,7 @@ public class SortByDateMediaPickerActivity extends Activity {
             if (receivedIntent.hasExtra(Constants.MAX_UPLOADABLE_VIDEO_DURATION))
                 max_video_duration = receivedIntent.getIntExtra(Constants.MAX_UPLOADABLE_VIDEO_DURATION, 10);
             if (receivedIntent.hasExtra(Constants.IS_CAPTURE_VIDEO))
-                isCaptureVideo = receivedIntent.getBooleanExtra(Constants.IS_CAPTURE_VIDEO, true);
+                Constants.isCaptureVideo = receivedIntent.getBooleanExtra(Constants.IS_CAPTURE_VIDEO, true);
             if (receivedIntent.hasExtra(Constants.MEDIA_RESULT)) {
                 String jsonArr = receivedIntent.getStringExtra(Constants.MEDIA_RESULT);
 
@@ -195,9 +194,9 @@ public class SortByDateMediaPickerActivity extends Activity {
                 }
             }
         });
-        if (!isCaptureVideo && max_video == 0) {
-            btnAdd.setEnabled(false);
-        }
+//        if (!Constants.isCaptureVideo && max_video == 0) {
+//            btnAdd.setEnabled(false);
+//        }
 
         btnCapture = (Button) findViewById(R.id.btnCapture);
         btnCapture.setOnClickListener(btnCaptureListener);
@@ -243,7 +242,7 @@ public class SortByDateMediaPickerActivity extends Activity {
     private View.OnClickListener btnCaptureListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            if (isCaptureVideo) {
+            if (Constants.isCaptureVideo) {
                 showActionDialog();
             } else {
                 dispatchTakePictureIntent();
@@ -771,43 +770,7 @@ public class SortByDateMediaPickerActivity extends Activity {
                     Log.v(TAG, "ADDED tmpMediaList END");
                     Log.v(TAG, "------------------");
                 }
-            }
-
-            //TEST
-            if(mSortByDateMediaList != null && mSortByDateMediaList.size()>0){
-                //for(int m = 0; m<mMediaList.size(); m++){
-                    Log.v(TAG, "mSortByDateMediaList.size(): " + mSortByDateMediaList.size());
-                    int mDupeTime = 0;
-                    for(int i=0; i<mSortByDateMediaList.size(); i++){
-                        Log.v(TAG, "mSortByDateMediaList[" + i + "].Id = " + mSortByDateMediaList.get(i).Id);
-                        Log.v(TAG, "mSortByDateMediaList[" + i + "].mediaList.size() = " + mSortByDateMediaList.get(i).mediaList.size());
-                        for(int j=0; j<mSortByDateMediaList.get(i).mediaList.size(); j++){
-                            MediaItem tmpMediaItem = mSortByDateMediaList.get(i).mediaList.get(j);
-                            Log.v(TAG, "mSortByDateMediaList[" + i + "].mediaList[" + j + "].URL= " +
-                                    tmpMediaItem.Url + " | " +
-                                    DateFormat.format("MMMM dd, yyyy", Long.parseLong(tmpMediaItem.Created_At)).toString() +
-                                    ", Order: " + tmpMediaItem.OrderNumber + ", IsCheck: " + tmpMediaItem.IsChecked
-                            );
-//                            if(tmpMediaItem.RealUrl != null && mMediaList.get(m).RealUrl != null){
-//                                String mFileNameFromMediaList = mMediaList.get(m).RealUrl.substring(mMediaList.get(m).RealUrl.lastIndexOf("/")+1);
-//                                String mFileNameOftmpMediaItem = tmpMediaItem.RealUrl.substring(tmpMediaItem.RealUrl.lastIndexOf("/")+1);
-//                                if(mFileNameFromMediaList.equals(mFileNameOftmpMediaItem) && m != tmpMediaItem.OrderNumber){
-//                                    Log.v(TAG, "DUPLICATE: " + tmpMediaItem.RealUrl);
-//                                    //mSortByDateMediaList.get(i).mediaList.remove(j+1);
-//                                    //tmpMediaItem.RealUrl = null;
-//                                    //Log.v(TAG, "REMOVED DUPLICATED FILE");
-//                                }
-//                            }
-                        }
-                    }
-                    if(mMediaList != null && mMediaList.size() > 0){
-                        Log.v(TAG, "mMediaList.size()= " + mMediaList.size());
-                        Log.v(TAG, "mSortByDateMediaList.get(0).mediaList.size()= " + mSortByDateMediaList.get(0).mediaList.size());
-                    }
-                //}
-
-            }
-            //----
+            }            
 
             initiateMediaListExpandableView();
             hideWaitingDialog();
@@ -912,7 +875,7 @@ public class SortByDateMediaPickerActivity extends Activity {
 //                    Toast.makeText(getApplicationContext(),
 //                            expandableListTitle[groupPosition] + " List Collapsed.",
 //                            Toast.LENGTH_SHORT).show();
-                    expandableListView.getLayoutParams().height = 137;
+                    expandableListView.getLayoutParams().height = 150;
                 }
             });
 
@@ -966,7 +929,7 @@ public class SortByDateMediaPickerActivity extends Activity {
         protected Void doInBackground(Void... params) {
             if(mMediaList.size() == 0){
                 getAllShownImagesPath(SortByDateMediaPickerActivity.this);
-                if (isCaptureVideo && max_video > 0)
+                if (Constants.isCaptureVideo && max_video > 0)
                     getAllShownVideosPath(SortByDateMediaPickerActivity.this);
             }
 
