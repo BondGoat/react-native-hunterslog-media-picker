@@ -13,6 +13,7 @@ import {
   InteractionManager,
 } from 'react-native';
 import Bar from 'react-native-bar-collapsible';
+import Spinner from 'react-native-loading-spinner-overlay';
 import MediaItem from './mediaitem';
 import _ from "lodash";
 
@@ -27,7 +28,7 @@ class CameraRollPicker extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isLoading: false,
+      is_spinner_visible: false,
       images: [],
       sortedImages: [],
       selected: this.props.selected,
@@ -56,7 +57,6 @@ class CameraRollPicker extends Component {
     mDisplayedMediaCount = 0;
     console.log("CameraRollPicker componentWillReceiveProps");
     this.setState({
-      isLoading: false,
       selected: nextProps.selected,
     },() => {
       this._fetch();
@@ -77,7 +77,7 @@ class CameraRollPicker extends Component {
 
   fetch() {
     if (!this.state.loadingMore) {
-      this.setState({loadingMore: true}, () => { this._fetch(); });
+      this.setState({is_spinner_visible: true, loadingMore: true}, () => { this._fetch(); });
     }
   }
 
@@ -236,6 +236,7 @@ class CameraRollPicker extends Component {
                   }
                   if(tmpMediaItem.realUrl.localeCompare(url) == 0){
                     tmpMediaItem.isChecked = true;
+                    tmpMediaList.IsExpanded = true;
                     console.log("CHECKED ITEM L1: " + tmpMediaItem.realUrl);
                   }
                 }
@@ -272,6 +273,7 @@ class CameraRollPicker extends Component {
                   }
                   if(tmpMediaItem.realUrl.localeCompare(url) == 0){
                     tmpMediaItem.isChecked = true;
+                    tmpMediaList.IsExpanded = true;
                     console.log("CHECKED ITEM L2: " + tmpMediaItem.realUrl);
                   }
                 }
@@ -315,6 +317,7 @@ class CameraRollPicker extends Component {
   _appendImages(data) {
     var assets = data.edges;
     var newState = {
+      is_spinner_visible: false,
       loadingMore: false,
     };
 
@@ -391,6 +394,7 @@ class CameraRollPicker extends Component {
           dataSource={this.state.dataSource}
           renderRow={rowData => this._renderRow(rowData)}
         />
+        <Spinner visible={this.state.is_spinner_visible}/>
       </View>
     );
   }
@@ -419,26 +423,18 @@ class CameraRollPicker extends Component {
     for(var i=0; i<rowData.mediaList.length; i++){
       numberOfItems += rowData.mediaList[i].length;
     }
-
-    var strTitle = rowData.id;
-
     var isShowOnStart = false;
     if(mDisplayedMediaCount <= MAX_INIT_DISPLAYED_MEDIA_COUNT){
       isShowOnStart = true;
       mDisplayedMediaCount += numberOfItems;
     }
-    if(!isShowOnStart){
-      for(var i=0;i<rowData.mediaList.length; i++){
-        if(rowData.mediaList[i].isChecked){
-          isShowOnStart = true;
-          break;
-        }
-      }
+    if(rowData.IsExpanded){
+      isShowOnStart = true;
     }
     return(
         <Bar
           style={{backgroundColor: '#e87600'}}
-          title={strTitle}
+          title={rowData.id}
           collapsible={true}
           showOnStart={isShowOnStart}
           iconCollapsed='chevron-up'
@@ -511,12 +507,6 @@ class CameraRollPicker extends Component {
     }
   }
 
-  _selectImage(item) {
-    //this.setState({isLoading: true}, () => {
-      this.props.onSelectedImages(item);
-    //});
-  }
-
   _nEveryRow(data, n) {
     var result = [],
         temp = [];
@@ -534,20 +524,6 @@ class CameraRollPicker extends Component {
     }
 
     return result;
-  }
-
-  _arrayObjectIndexOf(array, value) {
-    var index = -1;
-    for (var i = 0; i < array.length; i++) {
-      if(!_.isEmpty(array[i])){
-        if (!_.isEmpty(array[i].image) && array[i].image.uri.localeCompare(value) == 0) {
-        return i;
-        } else if (!_.isEmpty(array[i].realUrl) && array[i].realUrl.localeCompare(value) == 0) {
-          return i;
-        }
-      }
-    }
-    return index;
   }
 }
 
