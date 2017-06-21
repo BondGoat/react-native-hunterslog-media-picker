@@ -55,6 +55,7 @@ public class SortByDateMediaPickerActivity extends Activity {
     ProgressDialog mProgressDialog;
     Picasso picassoInstance;
     Button btnBack, btnAdd, btnCapture;
+    float scale;
     int max_photo = 10, max_video = 1, max_video_duration = 10;
     int selected_photo = 0, selected_video = 0;
     Dialog mDialog;
@@ -166,7 +167,7 @@ public class SortByDateMediaPickerActivity extends Activity {
         deviceHPx = displaymetrics.heightPixels;
         deviceH = (int) Utils.convertPixelsToDp(displaymetrics.heightPixels, getApplicationContext());
         deviceW = (int) Utils.convertPixelsToDp(displaymetrics.widthPixels, getApplicationContext());
-
+        scale = getResources().getDisplayMetrics().density;
         picassoInstance = new Picasso.Builder(getApplicationContext())
                 .memoryCache(new LruCache(2 * 1024 * 1024))
                 .addRequestHandler(new VideoRequestHandler())
@@ -849,7 +850,7 @@ public class SortByDateMediaPickerActivity extends Activity {
                             }
                         }
                         Log.v(TAG, "numberOfRows * imageW = " + numberOfRows + " * " + imageW + " = " + numberOfRows * (imageW+expandableListView.getDividerHeight()));
-                        height +=numberOfRows*(imageW+expandableListView.getDividerHeight())+135;
+                        height +=numberOfRows*(imageW+expandableListView.getDividerHeight())+ (int)(30 *scale); //135
                     }
                     expandableListView.setLayoutParams(new LinearLayout.LayoutParams(expandableListView.getWidth(), height));
 //                    Toast.makeText(getApplicationContext(),
@@ -875,7 +876,7 @@ public class SortByDateMediaPickerActivity extends Activity {
 //                    Toast.makeText(getApplicationContext(),
 //                            expandableListTitle[groupPosition] + " List Collapsed.",
 //                            Toast.LENGTH_SHORT).show();
-                    expandableListView.getLayoutParams().height = 150;
+                    expandableListView.getLayoutParams().height = (int) (40 * scale);
                 }
             });
 
