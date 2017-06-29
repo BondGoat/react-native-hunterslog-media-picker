@@ -195,11 +195,6 @@ class CameraRollPicker extends Component {
               previousItemCreatedTime = currentItemCreatedTime;
               if(tmpMediaList.id != null){
                 mSortByDateMedialist.push(tmpMediaList);
-                tmpMediaList = {
-                  id: null,
-                  mediaList: [],
-                  IsExpanded: false
-                };
               }
               tmpMediaList = {
                 id: null,
@@ -237,13 +232,12 @@ class CameraRollPicker extends Component {
                   if(tmpMediaItem.realUrl.localeCompare(url) == 0){
                     tmpMediaItem.isChecked = true;
                     tmpMediaList.IsExpanded = true;
-                    console.log("CHECKED ITEM L1: " + tmpMediaItem.realUrl);
                   }
                 }
               }
               //
               tmpMediaList.mediaList.push(tmpMediaItem);
-            } else {
+            } else if(previousItemCreatedTime.localeCompare(currentItemCreatedTime) ==0){
               tmpMediaItem = {
                 id: i,
                 type: mMediaList[i].node.type,
@@ -274,7 +268,6 @@ class CameraRollPicker extends Component {
                   if(tmpMediaItem.realUrl.localeCompare(url) == 0){
                     tmpMediaItem.isChecked = true;
                     tmpMediaList.IsExpanded = true;
-                    console.log("CHECKED ITEM L2: " + tmpMediaItem.realUrl);
                   }
                 }
               }
@@ -293,7 +286,7 @@ class CameraRollPicker extends Component {
             previousFile = mMediaList[i].node.image.uri;
           } else if(i == (mMediaList.length-1) && tmpMediaList.mediaList.length > 0){
             previousItemCreatedTime = currentItemCreatedTime;
-            mSortByDateMedialist.push(tmpMediaList);
+            //mSortByDateMedialist.push(tmpMediaList);
             tmpMediaList = {
               id: null,
               mediaList: [],
@@ -432,6 +425,7 @@ class CameraRollPicker extends Component {
       isShowOnStart = true;
     }
     return(
+      <View style={{marginBottom: 1}}>
         <Bar
           style={{backgroundColor: '#e87600'}}
           title={rowData.id}
@@ -442,6 +436,7 @@ class CameraRollPicker extends Component {
           >
           {this._renderListRowContent(rowData.mediaList)}
         </Bar>
+      </View>
     );
   }
 
@@ -484,7 +479,7 @@ class CameraRollPicker extends Component {
       <MediaItem
         maxVideo={max_video}
         maxPhoto={max_photo}
-        selectedItemCount={selectedItemCount}
+        selectedItems={this.state.selected}
         mediaType={mediaType}
         item={item}
         imageSize={this._imageSize}

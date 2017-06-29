@@ -28,7 +28,7 @@ class MediaItem extends Component {
       imageMargin: this.props.imageMargin,
       selectedMarker: this.props.selectedMarker,
       mediaType: this.props.mediaType,
-      selectedItemCount: this.props.selectedItemCount,
+      selectedItems: this.props.selectedItems,
       maxPhoto: this.props.maxPhoto,
       maxVideo: this.props.maxVideo
     };
@@ -41,10 +41,21 @@ class MediaItem extends Component {
     });
   }
 
+  _arrayObjectIndexOf(array, value) {
+    var index = -1;
+    for (var i = 0; i < array.length; i++) {
+      if (_.isEmpty(array[i].image) && array[i].realUrl.localeCompare(value) == 0) {
+        return i;
+      }
+    }
+    return index;
+  }
+
   _selectImage(item) {
-    console.log("_selectImage: " + item.realUrl);
-    console.log("this.state.mediaType: " + this.state.mediaType);
-    console.log("this.state.selectedItemCount: " + this.state.selectedItemCount);
+    var isNewSelectedItem = true;
+    if(this._arrayObjectIndexOf(this.props.selectedItems, item.realUrl) > -1){
+      isNewSelectedItem = false;
+    }
     var mediaType = 2; // Photo or Video;
     if(item){
       if(item.type.includes('Photo')){
@@ -54,15 +65,31 @@ class MediaItem extends Component {
       }
 
       if((mediaType == this.props.mediaType || this.props.mediaType == 2) &&
-         ((mediaType == 0 && this.props.selectedItemCount < this.state.maxPhoto) ||
-          (mediaType == 1 && this.props.selectedItemCount < this.state.maxVideo) ||
+         ((mediaType == 0 && this.props.selectedItems.length <= this.state.maxPhoto) ||
+          (mediaType == 1 && this.props.selectedItems.length <= this.state.maxVideo) ||
           this.props.mediaType == 2)){
-        item.isChecked = !item.isChecked;
-        this.setState({
-          isChecked: !this.state.isChecked
-        }, () => {
-          this.props.onSelectedImages(item);
-        });
+        if((mediaType == 0 && this.props.selectedItems.length < this.state.maxPhoto) ||
+           (mediaType == 1 && this.props.selectedItems.length < this.state.maxVideo)){
+             item.isChecked = isNewSelectedItem;
+             this.setState({
+               isChecked: isNewSelectedItem
+             }, () => {              
+              this.props.onSelectedImages(item);
+             });
+        } else if(((mediaType == 0 && this.props.selectedItems.length == this.state.maxPhoto) ||
+                  (mediaType == 1 && this.props.selectedItems.length == this.state.maxVideo)) &&
+                  !isNewSelectedItem){
+            item.isChecked = false;
+            this.setState({
+              isChecked: false
+            }, () => {
+              this.props.onSelectedImages(item);
+            });
+        } else if(((mediaType == 0 && this.props.selectedItems.length == this.state.maxPhoto) ||
+                  (mediaType == 1 && this.props.selectedItems.length == this.state.maxVideo)) &&
+                  isNewSelectedItem){
+            this.props.onSelectedImages(item);
+        }
       } else {
         this.props.onSelectedImages(item);
       }
