@@ -28,7 +28,7 @@ export default class MediaHunterslogPicker extends Component {
     super(props);
     this.state = {
       is_spinner_visible: false,
-	  groupTypes: this.props.groupTypes,
+	    groupTypes: this.props.groupTypes,
       selectedImages: this.props.selectedImages,
       isCaptureVideo: this.props.isCaptureVideo
     }
@@ -36,10 +36,10 @@ export default class MediaHunterslogPicker extends Component {
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-		groupTypes: nextProps.groupTypes,
-		selectedImages: nextProps.selectedImages,
-		isCaptureVideo: nextProps.isCaptureVideo		
-	});
+  		groupTypes: nextProps.groupTypes,
+  		selectedImages: nextProps.selectedImages,
+  		isCaptureVideo: nextProps.isCaptureVideo
+  	});
   }
 
   _getSelectedImages(currentImage) {
@@ -54,7 +54,7 @@ export default class MediaHunterslogPicker extends Component {
     return (
       <View style={{flex: 1}}>
         <CameraRollPicker
-          groupTypes{this.state.groupTypes}
+          groupTypes={this.state.groupTypes}
           assetType={(this.state.isCaptureVideo) ? 'All' : 'Photos'}
           selected={this.state.selectedImages}
           maximum={10}
