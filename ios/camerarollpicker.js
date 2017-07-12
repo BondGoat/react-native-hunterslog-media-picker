@@ -38,7 +38,7 @@ class CameraRollPicker extends Component {
       selected: this.props.selected,
       lastCursor: null,
       loadingMore: false,
-      noMore: false,
+      noMore: true,
       dataSource: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
       selectedAlbum: this.props.selectedAlbum
     };
@@ -92,11 +92,13 @@ class CameraRollPicker extends Component {
     InteractionManager.runAfterInteractions(() => {
       // CameraRoll.getPhotos(fetchParams).then((data) => this._appendImages(data), (e) => console.log(e));
       NativeModules.RNCamera.getAlbumPhotos({album: this.state.selectedAlbum}).then((data) => {
-        if (!data || data.edges.length == 0) {
-          this.props.onChangeAlbum();
-          return;
-      }
-        this._appendImages(data)
+        this.setState({is_spinner_visible: false, loadingMore: false, noMore: true}, () => {
+          if (!data || data.edges.length == 0) {
+            this.props.onChangeAlbum()
+          } else {
+            this._appendImages(data);
+          }
+        });
       }, (e) => console.log(e));
     });
   }
@@ -301,10 +303,7 @@ class CameraRollPicker extends Component {
 
   _appendImages(data) {
     var assets = data.edges;
-    var newState = {
-      is_spinner_visible: false,
-      loadingMore: false,
-    };
+    var newState = {};
 
     if (!data.page_info.has_next_page) {
       newState.noMore = true;

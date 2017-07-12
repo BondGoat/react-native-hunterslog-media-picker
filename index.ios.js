@@ -30,7 +30,8 @@ export default class MediaHunterslogPicker extends Component {
       is_spinner_visible: false,
 	    groupTypes: this.props.groupTypes,
       selectedImages: this.props.selectedImages,
-      isCaptureVideo: this.props.isCaptureVideo
+      isCaptureVideo: this.props.isCaptureVideo,
+      selectedAlbum: this.props.selectedAlbum
     }
   }
 
@@ -38,7 +39,8 @@ export default class MediaHunterslogPicker extends Component {
     this.setState({
   		groupTypes: nextProps.groupTypes,
   		selectedImages: nextProps.selectedImages,
-  		isCaptureVideo: nextProps.isCaptureVideo
+  		isCaptureVideo: nextProps.isCaptureVideo,
+      selectedAlbum: nextProps.selectedAlbum
   	});
   }
 
@@ -57,6 +59,7 @@ export default class MediaHunterslogPicker extends Component {
           groupTypes={this.state.groupTypes}
           assetType={(this.state.isCaptureVideo) ? 'All' : 'Photos'}
           selected={this.state.selectedImages}
+          selectedAlbum={this.state.selectedAlbum}
           maximum={10}
           imagesPerRow={3}
           imageMargin={2}
@@ -67,6 +70,7 @@ export default class MediaHunterslogPicker extends Component {
           }
           onGoToCamera={this._goToCamera.bind(this)}
           onSelectedImages={this._getSelectedImages.bind(this)}
+          onChangeAlbum={() => this.props.onChangeAlbum()}
         />
 
       </View>
