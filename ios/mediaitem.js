@@ -15,36 +15,43 @@ var tempDuration = [];
 var isFirstTime = true;
 var mDisplayedMediaCount = 0;
 var loadMoreActivationTimeOut = null;
+
 const DISPLAY_MORE_MEDIA_STEP_COUNT = 20
 const MAX_INIT_DISPLAYED_MEDIA_COUNT = 20;
+
 var mFetchMediaItemCount = MAX_INIT_DISPLAYED_MEDIA_COUNT;
+
 class MediaItem extends Component {
   constructor(props) {
     super(props);
     this.state = {
       item: this.props.item,
-      isChecked: this.props.item.isChecked,
       imageSize: this.props.imageSize,
       imageMargin: this.props.imageMargin,
       selectedMarker: this.props.selectedMarker,
-      mediaType: this.props.mediaType,
-      selectedItems: this.props.selectedItems,
       maxPhoto: this.props.maxPhoto,
-      maxVideo: this.props.maxVideo
+      maxVideo: this.props.maxVideo,
+      selectedImages: this.props.selectedImages
     };
   }
 
   componentWillReceiveProps(nextProps){
     this.setState({
-      mediaType: nextProps.mediaType,
-      selectedItemCount: nextProps.selectedItemCount
+      item: nextProps.item,
+      selectedImages: nextProps.selectedImages
     });
   }
 
   _arrayObjectIndexOf(array, value) {
     var index = -1;
     for (var i = 0; i < array.length; i++) {
-      if (_.isEmpty(array[i].image) && array[i].realUrl.localeCompare(value) == 0) {
+      var comparedItem;
+      if (array[i].image) {
+        comparedItem = array[i].image.uri;
+      } else {
+        comparedItem = array[i].realUrl;
+      }
+      if (comparedItem == value) {
         return i;
       }
     }
@@ -52,48 +59,13 @@ class MediaItem extends Component {
   }
 
   _selectImage(item) {
-    var isNewSelectedItem = true;
-    if(this._arrayObjectIndexOf(this.props.selectedItems, item.realUrl) > -1){
-      isNewSelectedItem = false;
-    }
-    var mediaType = 2; // Photo or Video;
-    if(item){
-      if(item.type.includes('Photo')){
-        mediaType = 0; // Photo
-      } else {
-        mediaType = 1; // Video
-      }
+    var selected = _.clone(item);
+    if (selected.isChecked || this._arrayObjectIndexOf(this.state.selectedImages, selected.realUrl) > -1)
+      selected.isChecked = false;
+    else
+      selected.isChecked = true;
 
-      if((mediaType == this.props.mediaType || this.props.mediaType == 2) &&
-         ((mediaType == 0 && this.props.selectedItems.length <= this.state.maxPhoto) ||
-          (mediaType == 1 && this.props.selectedItems.length <= this.state.maxVideo) ||
-          this.props.mediaType == 2)){
-        if((mediaType == 0 && this.props.selectedItems.length < this.state.maxPhoto) ||
-           (mediaType == 1 && this.props.selectedItems.length < this.state.maxVideo)){
-             item.isChecked = isNewSelectedItem;
-             this.setState({
-               isChecked: isNewSelectedItem
-             }, () => {              
-              this.props.onSelectedImages(item);
-             });
-        } else if(((mediaType == 0 && this.props.selectedItems.length == this.state.maxPhoto) ||
-                  (mediaType == 1 && this.props.selectedItems.length == this.state.maxVideo)) &&
-                  !isNewSelectedItem){
-            item.isChecked = false;
-            this.setState({
-              isChecked: false
-            }, () => {
-              this.props.onSelectedImages(item);
-            });
-        } else if(((mediaType == 0 && this.props.selectedItems.length == this.state.maxPhoto) ||
-                  (mediaType == 1 && this.props.selectedItems.length == this.state.maxVideo)) &&
-                  isNewSelectedItem){
-            this.props.onSelectedImages(item);
-        }
-      } else {
-        this.props.onSelectedImages(item);
-      }
-    }
+    this.setState({item: selected}, () => this.props.onSelectedImages(selected));
   }
 
   _renderPlayIcon(uri) {
@@ -131,7 +103,7 @@ class MediaItem extends Component {
             source={{uri: this.state.item.realUrl}}
             style={{height: this.state.imageSize, width: this.state.imageSize, margin: this.state.imageMargin}} >
             {this._renderPlayIcon(this.state.item.type)}
-            { (this.state.isChecked) ? marker : null }
+            { (this.state.item && this.state.item.isChecked) ? marker : <View /> }
           </Image>
         </TouchableOpacity>
       </View>

@@ -7,6 +7,9 @@
 //
 
 #import "RNCamera.h"
+#import "RCTConvert.h"
+#import <RCTUtils.h>
+#import <Photos/Photos.h>
 
 @implementation RNCamera
 
@@ -142,6 +145,168 @@ RCT_EXPORT_METHOD(generateThumbnail:(NSURL *)filepath width:(NSInteger)width hei
     }
 }
 
+RCT_EXPORT_METHOD(getAlbumPhotos:(NSDictionary *)options
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    checkPhotoLibraryConfig();
+    
+    NSMutableArray<NSDictionary<NSString *, id> *> *assets = [NSMutableArray new];
+    
+    PHFetchResult<PHAssetCollection *> *collections =
+    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum
+                                             subtype:PHAssetCollectionSubtypeAny
+                                             options:nil];
+    PHFetchResult<PHAssetCollection *> *collectionsUser =
+    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum
+                                             subtype:PHAssetCollectionSubtypeAny
+                                             options:nil];
+    PHFetchResult<PHAssetCollection *> *collectionsMoment =
+    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeMoment
+                                             subtype:PHAssetCollectionSubtypeAny
+                                             options:nil];
+    
+    [assets addObjectsFromArray:[self getAllPhotos:collections options:options]];
+    [assets addObjectsFromArray:[self getAllPhotos:collectionsUser options:options]];
+    [assets addObjectsFromArray:[self getAllPhotos:collectionsMoment options:options]];
+    
+    NSSortDescriptor *sortDescriptor;
+    sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:YES];
+    NSArray *sortedArray = [assets sortedArrayUsingDescriptors:@[sortDescriptor]];
+    
+    RCTResolvePromise(resolve, sortedArray, NO);
+}
+
+- (NSMutableArray<NSDictionary<NSString *, id> *> *) getAllPhotos:(PHFetchResult<PHAssetCollection *> *)collections options:(NSDictionary *)options
+{
+    NSMutableArray<NSDictionary<NSString *, id> *> *assets = [NSMutableArray new];
+    [collections enumerateObjectsUsingBlock:^(PHAssetCollection * _Nonnull album, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSString *selectedAlbum = [RCTConvert NSString:options[@"album"]];
+        
+        if (album && [selectedAlbum isEqualToString:album.localizedTitle]) {
+            [assets addObjectsFromArray:[self getPhotos:album]];
+        }
+    }];
+    return assets;
+}
+
+- (NSMutableArray<NSDictionary<NSString *, id> *> *) getPhotos:(PHAssetCollection *)album
+{
+    NSMutableArray<NSDictionary<NSString *, id> *> *assets = [NSMutableArray new];
+    
+    //    Get all photos
+    PHFetchResult *allMediaResult = [PHAsset fetchAssetsInAssetCollection:album options:nil];
+    
+    //   Get assets from the PHFetchResult object
+    [allMediaResult enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL *stop) {
+        if (asset) {
+            CLLocation *loc = asset.location;
+            NSDate *date = asset.creationDate;
+            
+            [assets addObject:@{
+                                @"node": @{
+                                        @"type": @(asset.mediaType),
+                                        @"group_name": album.localizedTitle,
+                                        @"image": @{
+                                                @"uri": [NSString stringWithFormat:@"ph://%@", asset.localIdentifier],
+                                                @"filename" : asset.localIdentifier,
+                                                @"height": [NSString stringWithFormat:@"%lu", asset.pixelHeight],
+                                                @"width": [NSString stringWithFormat:@"%lu", asset.pixelWidth],
+                                                @"isStored": @YES,
+                                                },
+                                        @"timestamp": @(date.timeIntervalSince1970),
+                                        @"location": loc ? @{
+                                            @"latitude": @(loc.coordinate.latitude),
+                                            @"longitude": @(loc.coordinate.longitude),
+                                            @"altitude": @(loc.altitude),
+                                            @"heading": @(loc.course),
+                                            @"speed": @(loc.speed),
+                                            } : @{},
+                                        }
+                                }];
+        }
+    }];
+    
+    return assets;
+}
+
+RCT_EXPORT_METHOD(getAlbumList:(NSDictionary *)options
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    
+    PHFetchResult<PHAssetCollection *> *collections =
+    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum
+                                             subtype:PHAssetCollectionSubtypeAny
+                                             options:nil];
+    
+    PHFetchResult<PHAssetCollection *> *collectionsUser =
+    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum
+                                             subtype:PHAssetCollectionSubtypeAny
+                                             options:nil];
+    
+    PHFetchResult<PHAssetCollection *> *collectionsMoment =
+    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeMoment
+                                             subtype:PHAssetCollectionSubtypeAny
+                                             options:nil];
+    
+    if (collections == nil && collectionsUser == nil && collectionsMoment == nil) {
+        NSString *errorMessage = @"Cannot access any albums";
+        NSError *error = RCTErrorWithMessage(errorMessage);
+        reject(@(error.code), errorMessage, error);
+    }
+    
+    NSMutableArray<NSDictionary *> *result = [[NSMutableArray alloc] init];
+    
+    // Start collecting info
+    [result addObjectsFromArray:[self getAlbums:collections]];
+    [result addObjectsFromArray:[self getAlbums:collectionsUser]];
+    [result addObjectsFromArray:[self getAlbums:collectionsMoment]];
+    
+    NSSortDescriptor *sortDescriptor;
+    sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+    NSMutableArray *sortedArray = [[NSMutableArray alloc] init];
+    [sortedArray addObjectsFromArray:[result sortedArrayUsingDescriptors:@[sortDescriptor]]];
+    
+    for (int i = 1; i < sortedArray.count; i++) {
+        if ([[sortedArray[i] valueForKey:@"name"] isEqualToString:[sortedArray[i - 1] valueForKey:@"name"]]) {
+            [sortedArray removeObjectAtIndex:i];
+            i--;
+        }
+    }
+    
+    resolve(sortedArray);
+}
+
+- (NSMutableArray<NSDictionary *>*) getAlbums: (PHFetchResult<PHAssetCollection *>*)collections
+{
+    NSMutableArray<NSDictionary *> *result = [[NSMutableArray alloc] init];
+    
+    [collections enumerateObjectsUsingBlock:^(PHAssetCollection * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        PHAssetCollectionSubtype type = [obj assetCollectionSubtype];
+        if (!isAlbumTypeSupported(type)) {
+            return;
+        }
+        
+        PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+        fetchOptions.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES] ];
+        PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:obj options: fetchOptions];
+        PHAsset *coverAsset = fetchResult.lastObject;
+        
+        if (coverAsset) {
+            NSDictionary *album = @{@"count": @(fetchResult.count),
+                                    @"name": obj.localizedTitle,
+                                    // Photos Framework asset scheme ph://
+                                    // https://github.com/facebook/react-native/blob/master/Libraries/CameraRoll/RCTPhotoLibraryImageLoader.m
+                                    @"cover": [NSString stringWithFormat:@"ph://%@", coverAsset.localIdentifier] };
+            [result addObject:album];
+        }
+    }];
+    
+    return result;
+}
+
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     
     NSString *mediaType = [info valueForKey:UIImagePickerControllerMediaType];
@@ -187,5 +352,65 @@ RCT_EXPORT_METHOD(generateThumbnail:(NSURL *)filepath width:(NSInteger)width hei
             ([UIScreen mainScreen].scale > 1.0));
 }
 
+static void RCTResolvePromise(RCTPromiseResolveBlock resolve,
+                              NSArray<NSDictionary<NSString *, id> *> *assets,
+                              BOOL hasNextPage)
+{
+    if (!assets.count) {
+        resolve(@{
+                  @"edges": assets,
+                  @"page_info": @{
+                          @"has_next_page": @NO,
+                          }
+                  });
+        return;
+    }
+    resolve(@{
+              @"edges": assets,
+              @"page_info": @{
+                      @"start_cursor": assets[0][@"node"][@"image"][@"uri"],
+                      @"end_cursor": assets[assets.count - 1][@"node"][@"image"][@"uri"],
+                      @"has_next_page": @(hasNextPage),
+                      }
+              });
+}
+
+static void checkPhotoLibraryConfig()
+{
+#if RCT_DEV
+    if (![[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSPhotoLibraryUsageDescription"]) {
+        RCTLogError(@"NSPhotoLibraryUsageDescription key must be present in Info.plist to use camera roll.");
+    }
+#endif
+}
+
+static BOOL isAlbumTypeSupported(PHAssetCollectionSubtype type) {
+    switch (type) {
+        case PHAssetCollectionSubtypeSmartAlbumUserLibrary:
+        case PHAssetCollectionSubtypeSmartAlbumSelfPortraits:
+        case PHAssetCollectionSubtypeSmartAlbumRecentlyAdded:
+        case PHAssetCollectionSubtypeSmartAlbumTimelapses:
+        case PHAssetCollectionSubtypeSmartAlbumPanoramas:
+        case PHAssetCollectionSubtypeSmartAlbumFavorites:
+        case PHAssetCollectionSubtypeSmartAlbumScreenshots:
+        case PHAssetCollectionSubtypeSmartAlbumBursts:
+        case PHAssetCollectionSubtypeAlbumRegular:
+        case PHAssetCollectionSubtypeAlbumCloudShared:
+        case PHAssetCollectionSubtypeAlbumSyncedEvent:
+        case PHAssetCollectionSubtypeAlbumMyPhotoStream:
+        case PHAssetCollectionSubtypeAlbumSyncedAlbum:
+        case PHAssetCollectionSubtypeAlbumImported:
+        case PHAssetCollectionSubtypeAlbumSyncedFaces:
+        case PHAssetCollectionSubtypeSmartAlbumVideos:
+        case PHAssetCollectionSubtypeSmartAlbumGeneric:
+        case PHAssetCollectionSubtypeSmartAlbumAllHidden:
+        case PHAssetCollectionSubtypeSmartAlbumLivePhotos:
+        case PHAssetCollectionSubtypeSmartAlbumDepthEffect:
+        case PHAssetCollectionSubtypeSmartAlbumSlomoVideos:
+            return YES;
+        default:
+            return NO;
+    }
+}
 
 @end
