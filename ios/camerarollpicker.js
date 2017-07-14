@@ -202,8 +202,8 @@ class CameraRollPicker extends Component {
                 duration: (!_.isEmpty(mMediaList[i].node.duration) ? mMediaList[i].node.duration : 0),
                 realUrl: mMediaList[i].node.image.uri,
                 location: {
-                  latitude: ((!_.isEmpty(mMediaList[i].node.location) && !_.isEmpty(mMediaList[i].node.location.latitude)) ? mMediaList[i].node.location.latitude : null ),
-                  longitude: ((!_.isEmpty(mMediaList[i].node.location) && !_.isEmpty(mMediaList[i].node.location.longitude)) ? mMediaList[i].node.location.longitude : null ),
+                  latitude: ((mMediaList[i].node.location && mMediaList[i].node.location.latitude > 0) ? mMediaList[i].node.location.latitude : null ),
+                  longitude: ((mMediaList[i].node.location && mMediaList[i].node.location.longitude > 0) ? mMediaList[i].node.location.longitude : null ),
                 },
                 isChecked: false,
                 createdAt: mMediaList[i].node.timestamp,
@@ -238,8 +238,8 @@ class CameraRollPicker extends Component {
                 duration: (!_.isEmpty(mMediaList[i].node.duration) ? mMediaList[i].node.duration : 0),
                 realUrl: mMediaList[i].node.image.uri,
                 location: {
-                  latitude: mMediaList[i].node.location.latitude,
-                  longitude: mMediaList[i].node.location.longitude,
+                  latitude: ((mMediaList[i].node.location && mMediaList[i].node.location.latitude > 0) ? mMediaList[i].node.location.latitude : null ),
+                  longitude: ((mMediaList[i].node.location && mMediaList[i].node.location.longitude > 0) ? mMediaList[i].node.location.longitude : null ),
                 },
                 isChecked: false,
                 createdAt: mMediaList[i].node.timestamp,
