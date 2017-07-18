@@ -11,15 +11,7 @@ import {
 } from 'react-native';
 import _ from "lodash";
 
-var tempDuration = [];
-var isFirstTime = true;
-var mDisplayedMediaCount = 0;
-var loadMoreActivationTimeOut = null;
-
-const DISPLAY_MORE_MEDIA_STEP_COUNT = 20
-const MAX_INIT_DISPLAYED_MEDIA_COUNT = 20;
-
-var mFetchMediaItemCount = MAX_INIT_DISPLAYED_MEDIA_COUNT;
+var Constants = require("./moduleconstants");
 
 class MediaItem extends Component {
   constructor(props) {
@@ -29,16 +21,12 @@ class MediaItem extends Component {
       imageSize: this.props.imageSize,
       imageMargin: this.props.imageMargin,
       selectedMarker: this.props.selectedMarker,
-      maxPhoto: this.props.maxPhoto,
-      maxVideo: this.props.maxVideo,
-      selectedImages: this.props.selectedImages
     };
   }
 
   componentWillReceiveProps(nextProps){
     this.setState({
       item: nextProps.item,
-      selectedImages: nextProps.selectedImages
     });
   }
 
@@ -60,12 +48,20 @@ class MediaItem extends Component {
 
   _selectImage(item) {
     var selected = _.clone(item);
-    if (selected.isChecked || this._arrayObjectIndexOf(this.state.selectedImages, selected.realUrl) > -1)
+    if (selected.isChecked || this._arrayObjectIndexOf(Constants.SELECTED_IMAGES, selected.realUrl) > -1) {
       selected.isChecked = false;
-    else
-      selected.isChecked = true;
+    } else {
+      if ((selected.type.includes('Photo') && Constants.photo_count >= Constants.MAX_PHOTO) ||
+          (selected.type.includes('Video') && Constants.video_count >= Constants.MAX_VIDEO)) {
+        selected.isChecked = false;
+      } else {
+        selected.isChecked = true;
+      }
+    }
 
-    this.setState({item: selected}, () => this.props.onSelectedImages(selected));
+    this.setState({item: selected}, () => {
+      this.props.onSelectedImages(selected)
+    });
   }
 
   _renderPlayIcon(uri) {

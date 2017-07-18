@@ -31,7 +31,11 @@ export default class MediaHunterslogPicker extends Component {
 	    groupTypes: this.props.groupTypes,
       selectedImages: this.props.selectedImages,
       isCaptureVideo: this.props.isCaptureVideo,
-      selectedAlbum: this.props.selectedAlbum
+      selectedAlbum: this.props.selectedAlbum,
+      maxPhoto: this.props.maxPhoto,
+      maxVideo: this.props.maxVideo,
+      photoCount: this.props.photoCount,
+      videoCount: this.props.videoCount,
     }
   }
 
@@ -40,7 +44,11 @@ export default class MediaHunterslogPicker extends Component {
   		groupTypes: nextProps.groupTypes,
   		selectedImages: nextProps.selectedImages,
   		isCaptureVideo: nextProps.isCaptureVideo,
-      selectedAlbum: nextProps.selectedAlbum
+      selectedAlbum: nextProps.selectedAlbum,
+      maxPhoto: nextProps.maxPhoto,
+      maxVideo: nextProps.maxVideo,
+      photoCount: nextProps.photoCount,
+      videoCount: nextProps.videoCount,
   	});
   }
 
@@ -60,6 +68,10 @@ export default class MediaHunterslogPicker extends Component {
           assetType={(this.state.isCaptureVideo) ? 'All' : 'Photos'}
           selected={this.state.selectedImages}
           selectedAlbum={this.state.selectedAlbum}
+          maxPhoto={this.state.maxPhoto}
+          maxVideo={this.state.maxVideo}
+          photoCount={this.state.photoCount}
+          videoCount={this.state.videoCount}
           maximum={10}
           imagesPerRow={3}
           imageMargin={2}

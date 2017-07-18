@@ -18,15 +18,18 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import MediaItem from './mediaitem';
 import _ from "lodash";
 
+const DISPLAY_MORE_MEDIA_STEP_COUNT = 1000;
+const MAX_INIT_DISPLAYED_MEDIA_COUNT = 20;
+
 var tempDuration = [];
 var isFirstTime = true;
 var mDisplayedMediaCount = 0;
 var loadMoreActivationTimeOut = null;
-const DISPLAY_MORE_MEDIA_STEP_COUNT = 1000;
-const MAX_INIT_DISPLAYED_MEDIA_COUNT = 20;
 var mFetchMediaItemCount = MAX_INIT_DISPLAYED_MEDIA_COUNT;
-
 var previousAlbum = 'Camera Roll';
+var Constants = require("./moduleconstants");
+
+var start = 0, end = 0, max_feed = 10, lazy_data = [];
 
 class CameraRollPicker extends Component {
   constructor(props) {
@@ -40,7 +43,11 @@ class CameraRollPicker extends Component {
       loadingMore: false,
       noMore: true,
       dataSource: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
-      selectedAlbum: this.props.selectedAlbum
+      selectedAlbum: this.props.selectedAlbum,
+      maxPhoto: this.props.maxPhoto,
+      maxVideo: this.props.maxVideo,
+      photoCount: this.props.photoCount,
+      videoCount: this.props.videoCount,
     };
   }
 
@@ -62,24 +69,39 @@ class CameraRollPicker extends Component {
     mDisplayedMediaCount = 0;
     this.setState({
       selected: nextProps.selected,
-      selectedAlbum: nextProps.selectedAlbum
+      selectedAlbum: nextProps.selectedAlbum,
+      maxPhoto: nextProps.maxPhoto,
+      maxVideo: nextProps.maxVideo,
+      photoCount: nextProps.photoCount,
+      videoCount: nextProps.videoCount,
     },() => {
+      Constants.SELECTED_IMAGES = this.state.selected;
+      Constants.MAX_PHOTO = this.state.maxPhoto;
+      Constants.MAX_VIDEO = this.state.maxVideo;
+      Constants.photo_count = this.state.photoCount;
+      Constants.video_count = this.state.videoCount;
+
       if (this.state.selectedAlbum != previousAlbum) {
         previousAlbum = this.state.selectedAlbum;
-        this._fetch();
+        start = 0; end = 0;
+        lazy_data = [];
+        setTimeout(() => {
+          this.fetch();
+        }, 1000);
       }
-      });
-    }
+    });
+  }
 
   _onEndReached() {
-    if (!this.state.noMore) {
-       mFetchMediaItemCount += DISPLAY_MORE_MEDIA_STEP_COUNT;
-       this.fetch();
-    } else {
-      this.setState({
-        loadingMore: false
-      });
-    }
+    this._lazyLoad();
+    // if (!this.state.noMore) {
+    //    mFetchMediaItemCount += DISPLAY_MORE_MEDIA_STEP_COUNT;
+    //    this.fetch();
+    // } else {
+    //   this.setState({
+    //     loadingMore: false
+    //   });
+    // }
   }
 
   fetch() {
@@ -92,7 +114,7 @@ class CameraRollPicker extends Component {
     InteractionManager.runAfterInteractions(() => {
       // CameraRoll.getPhotos(fetchParams).then((data) => this._appendImages(data), (e) => console.log(e));
       NativeModules.RNCamera.getAlbumPhotos({album: this.state.selectedAlbum}).then((data) => {
-        this.setState({is_spinner_visible: false, loadingMore: false, noMore: true}, () => {
+        this.setState({loadingMore: false, noMore: true}, () => {
           if (!data || data.edges.length == 0) {
             this.props.onChangeAlbum()
           } else {
@@ -303,7 +325,7 @@ class CameraRollPicker extends Component {
 
   _appendImages(data) {
     var assets = data.edges;
-    var newState = {};
+    var newState = {is_spinner_visible: false};
 
     if (!data.page_info.has_next_page) {
       newState.noMore = true;
@@ -314,14 +336,34 @@ class CameraRollPicker extends Component {
       var mSortByDateMedialist = this.dividedByRowData(assets, this.state.selected);
       newState.images = _.clone(assets);
       newState.sortedImages = mSortByDateMedialist;
-      newState.dataSource = this.state.dataSource.cloneWithRows(mSortByDateMedialist);
+      // newState.dataSource = this.state.dataSource.cloneWithRows(mSortByDateMedialist);
     } else {
       var mSortByDateMedialist = this.dividedByRowData(this.state.images, this.state.selected);
       newState.sortedImages = mSortByDateMedialist;
-      newState.dataSource = this.state.dataSource.cloneWithRows(mSortByDateMedialist);
+      // newState.dataSource = this.state.dataSource.cloneWithRows(mSortByDateMedialist);
     }
     InteractionManager.runAfterInteractions(() => {
-      this.setState(newState);
+      this.setState(newState, () => {
+        this._lazyLoad();
+      });
+    });
+  }
+
+  _lazyLoad() {
+    start = end;
+    end = end + max_feed;
+
+    if (end >= this.state.sortedImages.length) {
+      end = this.state.sortedImages.length;
+    }
+
+    for (var i = start; i < end; i++) {
+      var item = _.clone(this.state.sortedImages[i]);
+      lazy_data.push(item);
+    }
+
+    this.setState({
+      dataSource: this.state.dataSource.cloneWithRows(lazy_data)
     });
   }
 
@@ -463,7 +505,7 @@ class CameraRollPicker extends Component {
   }
 
   _renderImage(item) {
-    var {selectedMarker, imageMargin, max_photo, max_video} = this.props;
+    var {selectedMarker, imageMargin} = this.props;
     if (this._arrayObjectIndexOf(this.state.selected, item.realUrl) > -1) {
       item.isChecked = true;
     } else {
@@ -472,13 +514,10 @@ class CameraRollPicker extends Component {
 
     return (
       <MediaItem
-        maxVideo={max_video}
-        maxPhoto={max_photo}
         item={item}
         imageSize={this._imageSize}
         imageMargin={imageMargin}
         selectedMarker={selectedMarker}
-        selectedImages={this.state.selected}
         onSelectedImages={(item) => {this.props.onSelectedImages(item)}}
       />
     );
