@@ -149,32 +149,38 @@ RCT_EXPORT_METHOD(getAlbumPhotos:(NSDictionary *)options
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
-    checkPhotoLibraryConfig();
+    [RNCamera authorize:^(BOOL authorized) {
+        if (authorized) {
+            NSMutableArray<NSDictionary<NSString *, id> *> *assets = [NSMutableArray new];
+            
+            PHFetchResult<PHAssetCollection *> *collections =
+            [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum
+                                                     subtype:PHAssetCollectionSubtypeAny
+                                                     options:nil];
+            PHFetchResult<PHAssetCollection *> *collectionsUser =
+            [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum
+                                                     subtype:PHAssetCollectionSubtypeAny
+                                                     options:nil];
+            PHFetchResult<PHAssetCollection *> *collectionsMoment =
+            [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeMoment
+                                                     subtype:PHAssetCollectionSubtypeAny
+                                                     options:nil];
+            
+            [assets addObjectsFromArray:[self getAllPhotos:collections options:options]];
+            [assets addObjectsFromArray:[self getAllPhotos:collectionsUser options:options]];
+            [assets addObjectsFromArray:[self getAllPhotos:collectionsMoment options:options]];
+            
+            NSSortDescriptor *sortDescriptor;
+            sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:YES];
+            NSArray *sortedArray = [assets sortedArrayUsingDescriptors:@[sortDescriptor]];
     
-    NSMutableArray<NSDictionary<NSString *, id> *> *assets = [NSMutableArray new];
-    
-    PHFetchResult<PHAssetCollection *> *collections =
-    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum
-                                             subtype:PHAssetCollectionSubtypeAny
-                                             options:nil];
-    PHFetchResult<PHAssetCollection *> *collectionsUser =
-    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum
-                                             subtype:PHAssetCollectionSubtypeAny
-                                             options:nil];
-    PHFetchResult<PHAssetCollection *> *collectionsMoment =
-    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeMoment
-                                             subtype:PHAssetCollectionSubtypeAny
-                                             options:nil];
-    
-    [assets addObjectsFromArray:[self getAllPhotos:collections options:options]];
-    [assets addObjectsFromArray:[self getAllPhotos:collectionsUser options:options]];
-    [assets addObjectsFromArray:[self getAllPhotos:collectionsMoment options:options]];
-    
-    NSSortDescriptor *sortDescriptor;
-    sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:YES];
-    NSArray *sortedArray = [assets sortedArrayUsingDescriptors:@[sortDescriptor]];
-    
-    RCTResolvePromise(resolve, sortedArray, NO);
+            RCTResolvePromise(resolve, sortedArray, NO);
+        } else {
+            NSString *errorMessage = @"Access Photos  Permission Denied";
+            NSError *error = RCTErrorWithMessage(errorMessage);
+            reject(@(error.code), errorMessage, error);
+        }
+    }];
 }
 
 - (NSMutableArray<NSDictionary<NSString *, id> *> *) getAllPhotos:(PHFetchResult<PHAssetCollection *> *)collections options:(NSDictionary *)options
@@ -235,48 +241,55 @@ RCT_EXPORT_METHOD(getAlbumList:(NSDictionary *)options
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
+    [RNCamera authorize:^(BOOL authorized) {
+        if (authorized) {
+            PHFetchResult<PHAssetCollection *> *collections =
+            [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum
+                                                     subtype:PHAssetCollectionSubtypeAny
+                                                     options:nil];
+            
+            PHFetchResult<PHAssetCollection *> *collectionsUser =
+            [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum
+                                                     subtype:PHAssetCollectionSubtypeAny
+                                                     options:nil];
+            
+            PHFetchResult<PHAssetCollection *> *collectionsMoment =
+            [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeMoment
+                                                     subtype:PHAssetCollectionSubtypeAny
+                                                     options:nil];
+            
+            if (collections == nil && collectionsUser == nil && collectionsMoment == nil) {
+                NSString *errorMessage = @"Cannot access any albums";
+                NSError *error = RCTErrorWithMessage(errorMessage);
+                reject(@(error.code), errorMessage, error);
+            }
+            
+            NSMutableArray<NSDictionary *> *result = [[NSMutableArray alloc] init];
+            
+            // Start collecting info
+            [result addObjectsFromArray:[self getAlbums:collections]];
+            [result addObjectsFromArray:[self getAlbums:collectionsUser]];
+            [result addObjectsFromArray:[self getAlbums:collectionsMoment]];
+            
+            NSSortDescriptor *sortDescriptor;
+            sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+            NSMutableArray *sortedArray = [[NSMutableArray alloc] init];
+            [sortedArray addObjectsFromArray:[result sortedArrayUsingDescriptors:@[sortDescriptor]]];
+            
+            for (int i = 1; i < sortedArray.count; i++) {
+                if ([[sortedArray[i] valueForKey:@"name"] isEqualToString:[sortedArray[i - 1] valueForKey:@"name"]]) {
+                    [sortedArray removeObjectAtIndex:i];
+                    i--;
+                }
+            }
     
-    PHFetchResult<PHAssetCollection *> *collections =
-    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum
-                                             subtype:PHAssetCollectionSubtypeAny
-                                             options:nil];
-    
-    PHFetchResult<PHAssetCollection *> *collectionsUser =
-    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum
-                                             subtype:PHAssetCollectionSubtypeAny
-                                             options:nil];
-    
-    PHFetchResult<PHAssetCollection *> *collectionsMoment =
-    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeMoment
-                                             subtype:PHAssetCollectionSubtypeAny
-                                             options:nil];
-    
-    if (collections == nil && collectionsUser == nil && collectionsMoment == nil) {
-        NSString *errorMessage = @"Cannot access any albums";
-        NSError *error = RCTErrorWithMessage(errorMessage);
-        reject(@(error.code), errorMessage, error);
-    }
-    
-    NSMutableArray<NSDictionary *> *result = [[NSMutableArray alloc] init];
-    
-    // Start collecting info
-    [result addObjectsFromArray:[self getAlbums:collections]];
-    [result addObjectsFromArray:[self getAlbums:collectionsUser]];
-    [result addObjectsFromArray:[self getAlbums:collectionsMoment]];
-    
-    NSSortDescriptor *sortDescriptor;
-    sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
-    NSMutableArray *sortedArray = [[NSMutableArray alloc] init];
-    [sortedArray addObjectsFromArray:[result sortedArrayUsingDescriptors:@[sortDescriptor]]];
-    
-    for (int i = 1; i < sortedArray.count; i++) {
-        if ([[sortedArray[i] valueForKey:@"name"] isEqualToString:[sortedArray[i - 1] valueForKey:@"name"]]) {
-            [sortedArray removeObjectAtIndex:i];
-            i--;
+            resolve(sortedArray);
+        } else {
+            NSString *errorMessage = @"Access Photos  Permission Denied";
+            NSError *error = RCTErrorWithMessage(errorMessage);
+            reject(@(error.code), errorMessage, error);
         }
-    }
-    
-    resolve(sortedArray);
+    }];
 }
 
 - (NSMutableArray<NSDictionary *>*) getAlbums: (PHFetchResult<PHAssetCollection *>*)collections
@@ -382,6 +395,27 @@ static void checkPhotoLibraryConfig()
         RCTLogError(@"NSPhotoLibraryUsageDescription key must be present in Info.plist to use camera roll.");
     }
 #endif
+}
+
+typedef void (^authorizeCompletion)(BOOL);
+
++ (void)authorize:(authorizeCompletion)completion {
+    switch ([PHPhotoLibrary authorizationStatus]) {
+        case PHAuthorizationStatusAuthorized: {
+            completion(YES);
+            break;
+        }
+        case PHAuthorizationStatusNotDetermined: {
+            [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                [RNCamera authorize:completion];
+            }];
+            break;
+        }
+        default: {
+            completion(NO);
+            break;
+        }
+    }
 }
 
 static BOOL isAlbumTypeSupported(PHAssetCollectionSubtype type) {
