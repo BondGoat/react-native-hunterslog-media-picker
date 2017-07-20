@@ -51,8 +51,8 @@ class MediaItem extends Component {
     if (selected.isChecked || this._arrayObjectIndexOf(Constants.SELECTED_IMAGES, selected.realUrl) > -1) {
       selected.isChecked = false;
     } else {
-      if ((selected.type.includes('Photo') && Constants.photo_count >= Constants.MAX_PHOTO) ||
-          (selected.type.includes('Video') && Constants.video_count >= Constants.MAX_VIDEO)) {
+      if ((selected.type.includes('Photo') && (Constants.photo_count >= Constants.MAX_PHOTO || Constants.video_count > 0)) ||
+          (selected.type.includes('Video') && (Constants.video_count >= Constants.MAX_VIDEO || Constants.photo_count > 0))) {
         selected.isChecked = false;
       } else {
         selected.isChecked = true;
