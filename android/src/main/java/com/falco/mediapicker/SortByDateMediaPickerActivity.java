@@ -120,42 +120,27 @@ public class SortByDateMediaPickerActivity extends Activity {
 
                 if (mediaList != null && mediaList.length > 0) {
                     for (MediaItem item : mediaList) {
-                        // if(mMediaList != null && mMediaList.size() > 0){
-                        //     for(int i=0; i<mMediaList.size(); i++){
-                        //         Log.v(TAG, "mMediaList.get(" + i + ").RealUrl: " + mMediaList.get(i).RealUrl);
-                        //         Log.v(TAG, "item.RealUrl: " + item.RealUrl);
-                        //         if(mMediaList.get(i).RealUrl.equals(item.RealUrl)){
-                                    SelectedMediaItem tmpSelectedItem = new SelectedMediaItem();
-                                    //tmpSelectedItem.Id = i;
-                                    tmpSelectedItem.MediaItem = item;
-                                    tmpSelectedItem.MediaItem.IsChecked = true;
-                                    Constants.SELECTED_MEDIA_ITEM_LIST.add(tmpSelectedItem);
-                                    if (item.RealUrl.toLowerCase().contains("mp4") ||
-                                            item.RealUrl.toLowerCase().contains("m4v") ||
-                                            item.RealUrl.toLowerCase().contains("mov") ||
-                                            item.RealUrl.toLowerCase().contains("3gp"))
-                                        Constants.MEDIA_LIST_TYPE = 2;
-
-                                    if (item.RealUrl.toLowerCase().contains("jpg") ||
-                                            item.RealUrl.toLowerCase().contains("png") ||
-                                            item.RealUrl.toLowerCase().contains("jpeg") ||
-                                            item.RealUrl.toLowerCase().contains("gif"))
-                                        Constants.MEDIA_LIST_TYPE = 1;
-                        //         }
-                        //     }
-                        // }
+                        SelectedMediaItem tmpSelectedItem = new SelectedMediaItem();
+                        //tmpSelectedItem.Id = i;
+                        tmpSelectedItem.MediaItem = item;
+                        tmpSelectedItem.MediaItem.IsChecked = true;
+                        Constants.SELECTED_MEDIA_ITEM_LIST.add(tmpSelectedItem);
 
                         if (item.RealUrl.toLowerCase().contains("mp4") ||
                                 item.RealUrl.toLowerCase().contains("m4v") ||
                                 item.RealUrl.toLowerCase().contains("mov") ||
-                                item.RealUrl.toLowerCase().contains("3gp"))
+                                item.RealUrl.toLowerCase().contains("3gp")) {
                             selected_video++;
+                            Constants.MEDIA_LIST_TYPE = 2;
+                        }
 
                         if (item.RealUrl.toLowerCase().contains("jpg") ||
                                 item.RealUrl.toLowerCase().contains("png") ||
                                 item.RealUrl.toLowerCase().contains("jpeg") ||
-                                item.RealUrl.toLowerCase().contains("gif"))
+                                item.RealUrl.toLowerCase().contains("gif")) {
                             selected_photo++;
+                            Constants.MEDIA_LIST_TYPE = 1;
+                        }
                     }
                 }
             }
@@ -1072,6 +1057,7 @@ public class SortByDateMediaPickerActivity extends Activity {
             for(int i = 0; i < Constants.SELECTED_MEDIA_ITEM_LIST.size(); i++) {
                 MediaItem item = Constants.SELECTED_MEDIA_ITEM_LIST.get(i).MediaItem;
                 if (item.RealUrl.toLowerCase().contains("http") || item.RealUrl.toLowerCase().contains("https")) {
+                    tmpData.add(item);
                     continue;
                 }
 
