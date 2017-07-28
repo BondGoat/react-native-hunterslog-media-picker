@@ -302,7 +302,7 @@ public class SortByDateMediaPickerActivity extends Activity {
                             }
 
                             //Get latest image from gallery - Chien Nguyen
-                            Uri uri = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                            Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                             String[] projection = {MediaStore.MediaColumns.DATA,
                                     MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
                                     MediaStore.Images.Media.LATITUDE,
@@ -330,6 +330,7 @@ public class SortByDateMediaPickerActivity extends Activity {
                             location.Lng = imageLong;
                             item.Location = location;
                             item.IsChecked = true;
+                            item.Type = "Photo";
 
                             SelectedMediaItem itemSelected = new SelectedMediaItem();
                             itemSelected.Id = 0;
@@ -383,6 +384,7 @@ public class SortByDateMediaPickerActivity extends Activity {
                             location.Lng = videoLong;
                             item.Location = location;
                             item.IsChecked = true;
+                            item.Type = "Video";
 
                             SelectedMediaItem itemSelected = new SelectedMediaItem();
                             itemSelected.Id = 0;
@@ -1035,6 +1037,7 @@ public class SortByDateMediaPickerActivity extends Activity {
                 item.ThumbUrl = "";
                 item.Location = location;
                 item.Created_At = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED)) + "000";
+                item.Type = (absolutePathOfImage.toLowerCase().indexOf("jpg") > 0 || absolutePathOfImage.toLowerCase().indexOf("png") > 0) ? "Photo" : "Video";
                 //item.Created_At = Utils.getImageDateTaken(absolutePathOfImage);
 
                 mMediaList.add(item);

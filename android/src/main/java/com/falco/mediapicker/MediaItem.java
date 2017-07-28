@@ -20,6 +20,7 @@ public class MediaItem {
     public Boolean IsChecked = false;
     public String Created_At;
     public boolean isTrophyAlbum = false;
+    public String Type = "";
 }
 
 class LocationItem {
