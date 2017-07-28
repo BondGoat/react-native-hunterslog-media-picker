@@ -24,6 +24,18 @@ class MediaItem extends Component {
     };
   }
 
+  componentDidMount() {
+    if (this.state.item) {
+      Constants.addEvent(this.state.item.id, (selectedItem) => {
+        var item = _.clone(this.state.item);
+        if (!Constants.isCaptureVideo && selectedItem != this.state.item) {
+          item.isChecked = false;
+        }
+        this.setState({item});
+      });
+    }
+  }
+
   componentWillReceiveProps(nextProps){
     this.setState({
       item: nextProps.item,
@@ -48,6 +60,10 @@ class MediaItem extends Component {
 
   _selectImage(item) {
     var selected = _.clone(item);
+    if (!Constants.isCaptureVideo && selected.isChecked == true) {
+      return;
+    }
+
     if (selected.isChecked || this._arrayObjectIndexOf(Constants.SELECTED_IMAGES, selected.realUrl) > -1) {
       selected.isChecked = false;
     } else {

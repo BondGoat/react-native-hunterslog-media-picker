@@ -18,6 +18,7 @@
 RCT_EXPORT_MODULE();
 
 RCTResponseSenderBlock callback, callbackPlayback;
+BOOL hasNextPage = YES;
 
 RCT_EXPORT_METHOD(showCamera: (int) maxVideoDuration
                   isCaptureVideo:(BOOL) isCaptureVideo
@@ -52,7 +53,10 @@ RCT_EXPORT_METHOD(trimVideoFromStartTime:(CGFloat)startTime toEndTime:(CGFloat)e
     
     NSString *trimmedFilename =  [contenturl lastPathComponent];
     
-    trimmedFilename = [trimmedFilename stringByReplacingOccurrencesOfString:@".MOV" withString:@"_trimmed.mp4"];
+    if ([trimmedFilename containsString:@".MOV"])
+        trimmedFilename = [trimmedFilename stringByReplacingOccurrencesOfString:@".MOV" withString:@"_trimmed.mp4"];
+    else
+        trimmedFilename = [NSString stringWithFormat:@"%@%@", trimmedFilename, @"_trimmed.mp4"];
     
     NSString *tempPath = [documentsDirectory stringByAppendingFormat:@"/%@", trimmedFilename];
     BOOL videoExists = [[NSFileManager defaultManager] fileExistsAtPath:tempPath];
@@ -171,10 +175,10 @@ RCT_EXPORT_METHOD(getAlbumPhotos:(NSDictionary *)options
             [assets addObjectsFromArray:[self getAllPhotos:collectionsMoment options:options]];
             
             NSSortDescriptor *sortDescriptor;
-            sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:YES];
+            sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:NO];
             NSArray *sortedArray = [assets sortedArrayUsingDescriptors:@[sortDescriptor]];
     
-            RCTResolvePromise(resolve, sortedArray, NO);
+            RCTResolvePromise(resolve, sortedArray, hasNextPage);
         } else {
             NSString *errorMessage = @"Access Photos  Permission Denied";
             NSError *error = RCTErrorWithMessage(errorMessage);
@@ -191,31 +195,55 @@ RCT_EXPORT_METHOD(getAlbumPhotos:(NSDictionary *)options
         NSString *selectedAlbum = [RCTConvert NSString:options[@"album"]];
         
         if (album && [selectedAlbum isEqualToString:album.localizedTitle]) {
-            [assets addObjectsFromArray:[self getPhotos:album]];
+            [assets addObjectsFromArray:[self getPhotos:album options:options]];
         }
     }];
     return assets;
 }
 
-- (NSMutableArray<NSDictionary<NSString *, id> *> *) getPhotos:(PHAssetCollection *)album
+- (NSMutableArray<NSDictionary<NSString *, id> *> *) getPhotos:(PHAssetCollection *)album options:(NSDictionary *)options
 {
     NSMutableArray<NSDictionary<NSString *, id> *> *assets = [NSMutableArray new];
+    unsigned long start = [RCTConvert NSUInteger:options[@"start"]];
+    unsigned long end = [RCTConvert NSUInteger:options[@"end"]];
+    bool isCaptureVideo = [RCTConvert NSUInteger:options[@"isCaptureVideo"]];
+    
+    PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+    fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
     
     //    Get all photos
-    PHFetchResult *allMediaResult = [PHAsset fetchAssetsInAssetCollection:album options:nil];
+    PHFetchResult *allMediaResult = [PHAsset fetchAssetsInAssetCollection:album options:fetchOptions];
     
     //   Get assets from the PHFetchResult object
     [allMediaResult enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL *stop) {
-        if (asset) {
+        if (idx == allMediaResult.count - 1) {
+            hasNextPage = NO;
+        } else {
+            hasNextPage = YES;
+        }
+        
+        if (idx > end) {
+            *stop = YES;
+        }
+        if (!isCaptureVideo && asset.mediaType == PHAssetMediaTypeVideo) {
+            return;
+        }
+        if (asset && idx >= start && idx <= end) {
             CLLocation *loc = asset.location;
             NSDate *date = asset.creationDate;
             
+            NSString *uri = [NSString stringWithFormat:@"ph://%@", asset.localIdentifier];
+            
+            if (asset.mediaType == PHAssetMediaTypeVideo) {
+                uri = [NSString stringWithFormat:@"%@%@%@",@"assets-library://asset/asset.MOV?id=", [asset.localIdentifier.pathComponents firstObject], @"&ext=MOV"];
+            }
+        
             [assets addObject:@{
                                 @"node": @{
                                         @"type": @(asset.mediaType),
                                         @"group_name": album.localizedTitle,
                                         @"image": @{
-                                                @"uri": [NSString stringWithFormat:@"ph://%@", asset.localIdentifier],
+                                                @"uri": uri,
                                                 @"filename" : asset.localIdentifier,
                                                 @"height": [NSString stringWithFormat:@"%lu", asset.pixelHeight],
                                                 @"width": [NSString stringWithFormat:@"%lu", asset.pixelWidth],
@@ -231,6 +259,7 @@ RCT_EXPORT_METHOD(getAlbumPhotos:(NSDictionary *)options
                                             } : @{},
                                         }
                                 }];
+            
         }
     }];
     
@@ -267,9 +296,9 @@ RCT_EXPORT_METHOD(getAlbumList:(NSDictionary *)options
             NSMutableArray<NSDictionary *> *result = [[NSMutableArray alloc] init];
             
             // Start collecting info
-            [result addObjectsFromArray:[self getAlbums:collections]];
-            [result addObjectsFromArray:[self getAlbums:collectionsUser]];
-            [result addObjectsFromArray:[self getAlbums:collectionsMoment]];
+            [result addObjectsFromArray:[self getAlbums:collections options:options]];
+            [result addObjectsFromArray:[self getAlbums:collectionsUser options:options]];
+            [result addObjectsFromArray:[self getAlbums:collectionsMoment options:options]];
             
             NSSortDescriptor *sortDescriptor;
             sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
@@ -292,9 +321,10 @@ RCT_EXPORT_METHOD(getAlbumList:(NSDictionary *)options
     }];
 }
 
-- (NSMutableArray<NSDictionary *>*) getAlbums: (PHFetchResult<PHAssetCollection *>*)collections
+- (NSMutableArray<NSDictionary *>*) getAlbums: (PHFetchResult<PHAssetCollection *>*)collections options:(NSDictionary *)options
 {
     NSMutableArray<NSDictionary *> *result = [[NSMutableArray alloc] init];
+    bool isCaptureVideo = [RCTConvert NSUInteger:options[@"isCaptureVideo"]];
     
     [collections enumerateObjectsUsingBlock:^(PHAssetCollection * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         PHAssetCollectionSubtype type = [obj assetCollectionSubtype];
@@ -302,8 +332,13 @@ RCT_EXPORT_METHOD(getAlbumList:(NSDictionary *)options
             return;
         }
         
+        if (!isCaptureVideo && [obj.localizedTitle isEqualToString:@"Videos"]) {
+            return;
+        }
+        
         PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
         fetchOptions.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES] ];
+        
         PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:obj options: fetchOptions];
         PHAsset *coverAsset = fetchResult.lastObject;
         
