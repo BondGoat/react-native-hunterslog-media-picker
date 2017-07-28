@@ -66,6 +66,7 @@ export default class MediaHunterslogPicker extends Component {
         <CameraRollPicker
           groupTypes={this.state.groupTypes}
           assetType={(this.state.isCaptureVideo) ? 'All' : 'Photos'}
+          isCaptureVideo={this.state.isCaptureVideo}
           selected={this.state.selectedImages}
           selectedAlbum={this.state.selectedAlbum}
           maxPhoto={this.state.maxPhoto}
