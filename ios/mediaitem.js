@@ -28,7 +28,7 @@ class MediaItem extends Component {
     if (this.state.item) {
       Constants.addEvent(this.state.item.id, (selectedItem) => {
         var item = _.clone(this.state.item);
-        if (!Constants.isCaptureVideo && selectedItem != this.state.item) {
+        if (!Constants.isCaptureVideo && selectedItem.realUrl != this.state.item.realUrl) {
           item.isChecked = false;
         }
         this.setState({item});

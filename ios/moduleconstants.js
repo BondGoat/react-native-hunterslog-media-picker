@@ -25,4 +25,8 @@ module.exports = {
       this.mediaItemEvents[i].callback(selected);
     }
   },
+
+  clearEvents() {
+    this.mediaItemEvents = [];
+  }
 };

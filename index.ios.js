@@ -36,6 +36,7 @@ export default class MediaHunterslogPicker extends Component {
       maxVideo: this.props.maxVideo,
       photoCount: this.props.photoCount,
       videoCount: this.props.videoCount,
+      selectedItem: this.props.selectedItem,
     }
   }
 
@@ -49,6 +50,7 @@ export default class MediaHunterslogPicker extends Component {
       maxVideo: nextProps.maxVideo,
       photoCount: nextProps.photoCount,
       videoCount: nextProps.videoCount,
+      selectedItem: nextProps.selectedItem,
   	});
   }
 
@@ -69,6 +71,7 @@ export default class MediaHunterslogPicker extends Component {
           isCaptureVideo={this.state.isCaptureVideo}
           selected={this.state.selectedImages}
           selectedAlbum={this.state.selectedAlbum}
+          selectedItem={this.state.selectedItem}
           maxPhoto={this.state.maxPhoto}
           maxVideo={this.state.maxVideo}
           photoCount={this.state.photoCount}

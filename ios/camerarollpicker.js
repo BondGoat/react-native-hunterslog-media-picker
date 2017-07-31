@@ -95,7 +95,10 @@ class CameraRollPicker extends Component {
         start = 0; end = 0;
         lazy_data = [];
         setTimeout(() => {
-          this.setState({images: null, sortedImages: null, noMore: false, loadingMore: false}, () => this.fetch());
+          this.setState({images: null, sortedImages: null, noMore: false, loadingMore: false}, () => {
+            Constants.clearEvents();
+            this.fetch()
+          });
         }, 1000);
       }
     });
