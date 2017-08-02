@@ -130,8 +130,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                     viewItem.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Log.v(TAG, "PRESSED ITEM: " + item.RealUrl);
-                            Log.v(TAG, "Constants.isCaptureVideo: " + Constants.isCaptureVideo);
                             if (!Constants.isCaptureVideo) {
                                 for (View imgView : Constants.imageViews) {
                                     ImageView imgSelected = (ImageView) imgView.findViewById(R.id.ic_selected);
@@ -149,10 +147,8 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                             } else {
                                 if (Constants.MEDIA_LIST_TYPE == 0) {
                                     if (isPhoto(item)) {
-                                        Constants.isCaptureVideo = false;
                                         Constants.MEDIA_LIST_TYPE = 1;
                                     } else {
-                                        Constants.isCaptureVideo = true;
                                         Constants.MEDIA_LIST_TYPE = 2;
                                     }
                                 } else if ((!isPhoto(item) && Constants.MEDIA_LIST_TYPE == 1) ||
@@ -218,7 +214,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                                         showWarningDialog(context, tmpMessage);
                                     }
                                 }
-                                Log.v(TAG, "Constants.SELECTED_MEDIA_ITEM_LIST.size() = " + Constants.SELECTED_MEDIA_ITEM_LIST.size());
+
                                 if (Constants.SELECTED_MEDIA_ITEM_LIST.size() == 0) {
                                     //Constants.isCaptureVideo = true;
                                     Constants.MEDIA_LIST_TYPE = 0;
@@ -228,7 +224,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                     });
 
                     if (isPhoto) {
-                        Constants.isCaptureVideo = false;
                         if (item.RealUrl.toLowerCase().contains("http") || item.RealUrl.toLowerCase().contains("https")) {
                             picassoInstance.with(context)
                                     .load(Uri.parse(item.RealUrl))
@@ -243,7 +238,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                                     .into(imgView);
                         }
                     } else {
-                        Constants.isCaptureVideo = true;
                         picassoInstance.load(VideoRequestHandler.SCHEME_VIEDEO + ":" + ((item.RealUrl.toLowerCase().contains("file://")) ? item.RealUrl.replace("file://", "") : item.RealUrl))
                                 .resize(imageW/3, imageW/3)
                                 .centerCrop()

@@ -324,24 +324,30 @@ RCT_EXPORT_METHOD(getAlbumList:(NSDictionary *)options
 RCT_EXPORT_METHOD(isExistAlbum:(NSString *)albumName
                   callback:(RCTResponseSenderBlock)callback) {
     
-    PHFetchResult<PHAssetCollection *> *collections =
-    [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum
-                                             subtype:PHAssetCollectionSubtypeAny
-                                             options:nil];
+    [RNCamera authorize:^(BOOL authorized) {
+        if (authorized) {
+            PHFetchResult<PHAssetCollection *> *collections =
+            [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum
+                                                     subtype:PHAssetCollectionSubtypeAny
+                                                     options:nil];
     
-    __block BOOL isExist = NO;
-    [collections enumerateObjectsUsingBlock:^(PHAssetCollection * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([obj.localizedTitle isEqualToString:albumName]) {
-            isExist = YES;
-            *stop = YES;
+            __block BOOL isExist = NO;
+            [collections enumerateObjectsUsingBlock:^(PHAssetCollection * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                if ([obj.localizedTitle isEqualToString:albumName]) {
+                    isExist = YES;
+                    *stop = YES;
+                }
+            }];
+            
+            if (isExist) {
+                callback(@[@"YES"]);
+            } else {
+                callback(@[@"NO"]);
+            }
+        } else {
+            callback(@[@"NOT AUTHORIZED"]);
         }
     }];
-    
-    if (isExist) {
-        callback(@[@"YES"]);
-    } else {
-        callback(@[@"NO"]);
-    }
 }
 
 - (NSMutableArray<NSDictionary *>*) getAlbums: (PHFetchResult<PHAssetCollection *>*)collections options:(NSDictionary *)options

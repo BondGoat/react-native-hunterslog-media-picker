@@ -192,7 +192,7 @@ public class SortByDateMediaPickerActivity extends Activity {
         Log.v(TAG, "run constantsDestructor()");
         setResult(Constants.MEDIA_RESULT_CODE, null);
         Constants.STEP = 0;
-        Constants.MEDIA_LIST_TYPE = 0;
+//        Constants.MEDIA_LIST_TYPE = 0;
 
 //        if (Constants.SELECTED_MEDIA_ITEM_LIST != null) {
 //            Constants.SELECTED_MEDIA_ITEM_LIST.clear();
@@ -1148,7 +1148,7 @@ public class SortByDateMediaPickerActivity extends Activity {
 
                 // Reset Constants
                 Constants.STEP = 0;
-                Constants.MEDIA_LIST_TYPE = 0;
+                //Constants.MEDIA_LIST_TYPE = 0;
 
                 //        if (Constants.SELECTED_MEDIA_ITEM_LIST != null) {
                 //            Constants.SELECTED_MEDIA_ITEM_LIST.clear();
