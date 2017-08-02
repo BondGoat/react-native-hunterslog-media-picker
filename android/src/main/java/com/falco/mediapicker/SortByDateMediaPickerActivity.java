@@ -171,9 +171,9 @@ public class SortByDateMediaPickerActivity extends Activity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (Constants.SELECTED_MEDIA_ITEM_LIST.size() > 0){
+                if (Constants.SELECTED_MEDIA_ITEM_LIST.size() > 0) {
                     new PrepareSendingData().execute();
-                else if(Constants.isCaptureVideo){
+                } else if(Constants.isCaptureVideo) {
                     showWarningDialog(getString(R.string.txt_limit_add));
                 }
             }
