@@ -96,7 +96,6 @@ public class SortByDateMediaPickerActivity extends Activity {
         } else {
             mMediaList = new ArrayList<>();
         }
-
         Intent receivedIntent = getIntent();
         if (receivedIntent != null) {
             if (receivedIntent.hasExtra(Constants.MAX_UPLOADABLE_PHOTO))
@@ -109,7 +108,6 @@ public class SortByDateMediaPickerActivity extends Activity {
                 Constants.isCaptureVideo = receivedIntent.getBooleanExtra(Constants.IS_CAPTURE_VIDEO, true);
             if (receivedIntent.hasExtra(Constants.MEDIA_RESULT)) {
                 String jsonArr = receivedIntent.getStringExtra(Constants.MEDIA_RESULT);
-
                 Gson gson = new Gson();
                 MediaItem[] mediaList = gson.fromJson(jsonArr, MediaItem[].class);
 
@@ -173,9 +171,9 @@ public class SortByDateMediaPickerActivity extends Activity {
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (Constants.SELECTED_MEDIA_ITEM_LIST.size() > 0)
+                if (Constants.SELECTED_MEDIA_ITEM_LIST.size() > 0){
                     new PrepareSendingData().execute();
-                else {
+                else if(Constants.isCaptureVideo){
                     showWarningDialog(getString(R.string.txt_limit_add));
                 }
             }
@@ -222,6 +220,12 @@ public class SortByDateMediaPickerActivity extends Activity {
 
         if(expandableListView_container.getChildCount() > 0){
             expandableListView_container.removeAllViews();
+        }
+
+        if(Constants.imageViews != null) {
+            Constants.imageViews.clear();
+        } else {
+            Constants.imageViews = new ArrayList<>();
         }
     }
 
@@ -433,6 +437,12 @@ public class SortByDateMediaPickerActivity extends Activity {
             if (mSelectedMediaList != null) {
                 mSelectedMediaList.clear();
                 mSelectedMediaList = null;
+            }
+
+            if(Constants.imageViews != null) {
+                Constants.imageViews.clear();
+            } else {
+                Constants.imageViews = new ArrayList<>();
             }
         }
         return super.onKeyDown(keyCode, event);
@@ -812,6 +822,7 @@ public class SortByDateMediaPickerActivity extends Activity {
             expandableListView.setAdapter(expandableListAdapter);
             expandableListView.setFocusable(false);
             expandableListView.setFocusableInTouchMode(false);
+
             expandableListView.setOnTouchListener(new View.OnTouchListener() {
                 public boolean onTouch(View v, MotionEvent event) {
                     return (event.getAction() == MotionEvent.ACTION_MOVE);
@@ -1165,6 +1176,12 @@ public class SortByDateMediaPickerActivity extends Activity {
 
                 if(expandableListView_container.getChildCount() > 0){
                     expandableListView_container.removeAllViews();
+                }
+
+                if(Constants.imageViews != null) {
+                    Constants.imageViews.clear();
+                } else {
+                    Constants.imageViews = new ArrayList<>();
                 }
 
                 finish();

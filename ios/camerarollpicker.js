@@ -65,7 +65,7 @@ class CameraRollPicker extends Component {
       width = containerWidth;
     }
     this._imageSize = ( width - 2 ) / imagesPerRow - (imageMargin * 2);
-    this.fetch();
+    // this.fetch();
   }
 
   componentWillReceiveProps(nextProps) {

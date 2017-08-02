@@ -108,13 +108,17 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                     Log.v(TAG, "Constants.STEP= " + Constants.STEP);
 
                     View viewItem = layoutInflater.inflate(R.layout.layout_photo, null);
+
+                    // Add to an ImageView array to track the item instances
+                    viewItem.setTag(mediaItemList.get(Constants.STEP).Id);
+
                     viewItem.setLayoutParams(layoutParams);
                     boolean isPhoto = isPhoto(item);
                     ImageView imgView = (ImageView) viewItem.findViewById(R.id.imgView);
                     imgView.setLayoutParams(layoutParams);
                     ImageView imgSelected = (ImageView) viewItem.findViewById(R.id.ic_selected);
                     imgView.setTag(imgSelected);
-                    ImageView imgPlay = (ImageView) viewItem.findViewById(R.id.ic_play);
+                    final ImageView imgPlay = (ImageView) viewItem.findViewById(R.id.ic_play);
 
                     imgSelected.setVisibility((item.IsChecked) ? View.VISIBLE : View.GONE);
                     if(item.IsChecked){
@@ -127,81 +131,98 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                         @Override
                         public void onClick(View v) {
                             Log.v(TAG, "PRESSED ITEM: " + item.RealUrl);
-                            if(Constants.MEDIA_LIST_TYPE == 0){
-                                if (isPhoto(item)){
-                                    Constants.isCaptureVideo = false;
-                                    Constants.MEDIA_LIST_TYPE = 1;
-                                } else {
-                                    Constants.isCaptureVideo = true;
-                                    Constants.MEDIA_LIST_TYPE = 2;
-                                }
-                            } else if((!isPhoto(item) && Constants.MEDIA_LIST_TYPE == 1) ||
-                                      (isPhoto(item) && Constants.MEDIA_LIST_TYPE == 2)){
-                                showWarningDialog(context, context.getResources().getString(R.string.txt_warning));
-                            }
-                            if((Constants.SELECTED_MEDIA_ITEM_LIST.size() < max_photo && Constants.MEDIA_LIST_TYPE == 1 && isPhoto(item)) ||
-                               (Constants.SELECTED_MEDIA_ITEM_LIST.size() < max_video && Constants.MEDIA_LIST_TYPE == 2 && !isPhoto(item))){
-
-                                SelectedMediaItem tmpSelectedMediaItem = new SelectedMediaItem();
-                                tmpSelectedMediaItem.Id = item.OrderNumber;
-                                tmpSelectedMediaItem.MediaItem = item;
-                                ImageView itemImgSelected = (ImageView) v.findViewById(R.id.ic_selected);
-                                if(Constants.SELECTED_MEDIA_ITEM_LIST.size() == 0 && !item.IsChecked){
-                                    item.IsChecked = true;
-                                    itemImgSelected.setVisibility(View.VISIBLE);
-                                    Constants.SELECTED_MEDIA_ITEM_LIST.add(tmpSelectedMediaItem);
-                                } else {
-                                    boolean isNew = true;
-                                    int j1 = 0;
-                                    while( j1 < Constants.SELECTED_MEDIA_ITEM_LIST.size()){
-                                      if(Constants.SELECTED_MEDIA_ITEM_LIST.get(j1).MediaItem.RealUrl.equals(tmpSelectedMediaItem.MediaItem.RealUrl)){
-                                            item.IsChecked = false;
-                                            itemImgSelected.setVisibility(View.GONE);
-                                          Constants.SELECTED_MEDIA_ITEM_LIST.remove(Constants.SELECTED_MEDIA_ITEM_LIST.get(j1));
-                                            isNew = false;
-                                            break;
-                                        }
-                                      j1++;
+                            Log.v(TAG, "Constants.isCaptureVideo: " + Constants.isCaptureVideo);
+                            if (!Constants.isCaptureVideo) {
+                                for (View imgView : Constants.imageViews) {
+                                    ImageView imgSelected = (ImageView) imgView.findViewById(R.id.ic_selected);
+                                    if (imgView.getTag() != v.getTag()) {
+                                        imgSelected.setVisibility(View.GONE);
+                                    } else {
+                                        imgSelected.setVisibility(View.VISIBLE);
+                                        Constants.SELECTED_MEDIA_ITEM_LIST.clear();
+                                        SelectedMediaItem tmpSelectedMediaItem = new SelectedMediaItem();
+                                        tmpSelectedMediaItem.Id = item.OrderNumber;
+                                        tmpSelectedMediaItem.MediaItem = item;
+                                        Constants.SELECTED_MEDIA_ITEM_LIST.add(tmpSelectedMediaItem);
                                     }
-                                    if(isNew){
+                                }
+                            } else {
+                                if (Constants.MEDIA_LIST_TYPE == 0) {
+                                    if (isPhoto(item)) {
+                                        Constants.isCaptureVideo = false;
+                                        Constants.MEDIA_LIST_TYPE = 1;
+                                    } else {
+                                        Constants.isCaptureVideo = true;
+                                        Constants.MEDIA_LIST_TYPE = 2;
+                                    }
+                                } else if ((!isPhoto(item) && Constants.MEDIA_LIST_TYPE == 1) ||
+                                        (isPhoto(item) && Constants.MEDIA_LIST_TYPE == 2)) {
+                                    showWarningDialog(context, context.getResources().getString(R.string.txt_warning));
+                                }
+                                if ((Constants.SELECTED_MEDIA_ITEM_LIST.size() < max_photo && Constants.MEDIA_LIST_TYPE == 1 && isPhoto(item)) ||
+                                        (Constants.SELECTED_MEDIA_ITEM_LIST.size() < max_video && Constants.MEDIA_LIST_TYPE == 2 && !isPhoto(item))) {
+                            
+                                    SelectedMediaItem tmpSelectedMediaItem = new SelectedMediaItem();
+                                    tmpSelectedMediaItem.Id = item.OrderNumber;
+                                    tmpSelectedMediaItem.MediaItem = item;
+                                    ImageView itemImgSelected = (ImageView) v.findViewById(R.id.ic_selected);
+                                    if (Constants.SELECTED_MEDIA_ITEM_LIST.size() == 0 && !item.IsChecked) {
                                         item.IsChecked = true;
                                         itemImgSelected.setVisibility(View.VISIBLE);
                                         Constants.SELECTED_MEDIA_ITEM_LIST.add(tmpSelectedMediaItem);
-                                        Log.v(TAG, "ADDED ITEM L2");
-                                    }
-                                }
-                            } else if((Constants.SELECTED_MEDIA_ITEM_LIST.size() == max_photo && Constants.MEDIA_LIST_TYPE == 1 && isPhoto(item)) ||
-                                    (Constants.SELECTED_MEDIA_ITEM_LIST.size() == max_video && Constants.MEDIA_LIST_TYPE == 2 && !isPhoto(item))){
-                                SelectedMediaItem tmpSelectedMediaItem = new SelectedMediaItem();
-                                tmpSelectedMediaItem.Id = item.OrderNumber;
-                                tmpSelectedMediaItem.MediaItem = item;
-                                ImageView itemImgSelected = (ImageView) v.findViewById(R.id.ic_selected);
-                                boolean IsNew = true;
-                                int j2 = 0;
-                                while( j2 < Constants.SELECTED_MEDIA_ITEM_LIST.size()){
-                                  if(Constants.SELECTED_MEDIA_ITEM_LIST.get(j2).MediaItem.RealUrl.equals(tmpSelectedMediaItem.MediaItem.RealUrl)){
-                                        item.IsChecked = false;
-                                        itemImgSelected.setVisibility(View.GONE);
-                                      Constants.SELECTED_MEDIA_ITEM_LIST.remove(Constants.SELECTED_MEDIA_ITEM_LIST.get(j2));
-                                        IsNew = false;
-                                        break;
-                                    }
-                                  j2++;
-                                }
-                                if(IsNew){
-                                    String tmpMessage;
-                                    if(Constants.MEDIA_LIST_TYPE == 1){
-                                        tmpMessage = context.getResources().getString(R.string.txt_warning_photo).replace("#P", String.valueOf(max_photo));
                                     } else {
-                                        tmpMessage = context.getResources().getString(R.string.txt_warning_video).replace("#V", String.valueOf(max_video));
+                                        boolean isNew = true;
+                                        int j1 = 0;
+                                        while (j1 < Constants.SELECTED_MEDIA_ITEM_LIST.size()) {
+                                            if (Constants.SELECTED_MEDIA_ITEM_LIST.get(j1).MediaItem.RealUrl.equals(tmpSelectedMediaItem.MediaItem.RealUrl)) {
+                                                item.IsChecked = false;
+                                                itemImgSelected.setVisibility(View.GONE);
+                                                Constants.SELECTED_MEDIA_ITEM_LIST.remove(Constants.SELECTED_MEDIA_ITEM_LIST.get(j1));
+                                                isNew = false;
+                                                break;
+                                            }
+                                            j1++;
+                                        }
+                                        if (isNew) {
+                                            item.IsChecked = true;
+                                            itemImgSelected.setVisibility(View.VISIBLE);
+                                            Constants.SELECTED_MEDIA_ITEM_LIST.add(tmpSelectedMediaItem);
+                                            Log.v(TAG, "ADDED ITEM L2");
+                                        }
                                     }
-                                    showWarningDialog(context, tmpMessage);
+                                } else if ((Constants.SELECTED_MEDIA_ITEM_LIST.size() == max_photo && Constants.MEDIA_LIST_TYPE == 1 && isPhoto(item)) ||
+                                        (Constants.SELECTED_MEDIA_ITEM_LIST.size() == max_video && Constants.MEDIA_LIST_TYPE == 2 && !isPhoto(item))) {
+                                    SelectedMediaItem tmpSelectedMediaItem = new SelectedMediaItem();
+                                    tmpSelectedMediaItem.Id = item.OrderNumber;
+                                    tmpSelectedMediaItem.MediaItem = item;
+                                    ImageView itemImgSelected = (ImageView) v.findViewById(R.id.ic_selected);
+                                    boolean IsNew = true;
+                                    int j2 = 0;
+                                    while (j2 < Constants.SELECTED_MEDIA_ITEM_LIST.size()) {
+                                        if (Constants.SELECTED_MEDIA_ITEM_LIST.get(j2).MediaItem.RealUrl.equals(tmpSelectedMediaItem.MediaItem.RealUrl)) {
+                                            item.IsChecked = false;
+                                            itemImgSelected.setVisibility(View.GONE);
+                                            Constants.SELECTED_MEDIA_ITEM_LIST.remove(Constants.SELECTED_MEDIA_ITEM_LIST.get(j2));
+                                            IsNew = false;
+                                            break;
+                                        }
+                                        j2++;
+                                    }
+                                    if (IsNew) {
+                                        String tmpMessage;
+                                        if (Constants.MEDIA_LIST_TYPE == 1) {
+                                            tmpMessage = context.getResources().getString(R.string.txt_warning_photo).replace("#P", String.valueOf(max_photo));
+                                        } else {
+                                            tmpMessage = context.getResources().getString(R.string.txt_warning_video).replace("#V", String.valueOf(max_video));
+                                        }
+                                        showWarningDialog(context, tmpMessage);
+                                    }
                                 }
-                            }
-                            Log.v(TAG, "Constants.SELECTED_MEDIA_ITEM_LIST.size() = " + Constants.SELECTED_MEDIA_ITEM_LIST.size());
-                            if(Constants.SELECTED_MEDIA_ITEM_LIST.size() ==0){
-                                Constants.isCaptureVideo = true;
-                                Constants.MEDIA_LIST_TYPE = 0;
+                                Log.v(TAG, "Constants.SELECTED_MEDIA_ITEM_LIST.size() = " + Constants.SELECTED_MEDIA_ITEM_LIST.size());
+                                if (Constants.SELECTED_MEDIA_ITEM_LIST.size() == 0) {
+                                    //Constants.isCaptureVideo = true;
+                                    Constants.MEDIA_LIST_TYPE = 0;
+                                }
                             }
                         }
                     });
@@ -230,6 +251,8 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                     }
                     viewRow.addView(viewItem);
                     Constants.STEP++;
+
+                    Constants.imageViews.add(viewItem);
                 }
                 i++;
             }

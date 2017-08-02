@@ -1,5 +1,7 @@
 package com.falco.mediapicker;
 
+import android.view.View;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,4 +38,6 @@ public class Constants {
     public static List<SelectedMediaItem> SELECTED_MEDIA_ITEM_LIST = new ArrayList<SelectedMediaItem>();
     public static List<Integer> EXPAND_GROUPS = new ArrayList<>();
     public static boolean isCaptureVideo = true;
+
+    public static List<View> imageViews = new ArrayList<>();
 }
