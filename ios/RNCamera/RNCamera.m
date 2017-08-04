@@ -367,6 +367,8 @@ RCT_EXPORT_METHOD(isExistAlbum:(NSString *)albumName
         
         PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
         fetchOptions.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES] ];
+		if (!isCaptureVideo)
+            fetchOptions.predicate = [NSPredicate predicateWithFormat:@"mediaType = %d", PHAssetMediaTypeImage];
         
         PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:obj options: fetchOptions];
         PHAsset *coverAsset = fetchResult.lastObject;
