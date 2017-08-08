@@ -94,6 +94,7 @@ class CameraRollPicker extends Component {
       if (this.state.selectedAlbum != previousAlbum) {
         start = 0; end = 0;
         lazy_data = [];
+        this.setState({is_spinner_visible: true});
         setTimeout(() => {
           this.setState({images: null, sortedImages: null, noMore: false, loadingMore: false}, () => {
             Constants.clearEvents();

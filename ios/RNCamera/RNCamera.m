@@ -301,7 +301,7 @@ RCT_EXPORT_METHOD(getAlbumList:(NSDictionary *)options
             [result addObjectsFromArray:[self getAlbums:collectionsMoment options:options]];
             
             NSSortDescriptor *sortDescriptor;
-            sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+            sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"created_date" ascending:NO];
             NSMutableArray *sortedArray = [[NSMutableArray alloc] init];
             [sortedArray addObjectsFromArray:[result sortedArrayUsingDescriptors:@[sortDescriptor]]];
             
@@ -366,7 +366,7 @@ RCT_EXPORT_METHOD(isExistAlbum:(NSString *)albumName
         }
         
         PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
-        fetchOptions.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES] ];
+//        fetchOptions.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO] ];
 		if (!isCaptureVideo)
             fetchOptions.predicate = [NSPredicate predicateWithFormat:@"mediaType = %d", PHAssetMediaTypeImage];
         
@@ -378,7 +378,8 @@ RCT_EXPORT_METHOD(isExistAlbum:(NSString *)albumName
                                     @"name": obj.localizedTitle,
                                     // Photos Framework asset scheme ph://
                                     // https://github.com/facebook/react-native/blob/master/Libraries/CameraRoll/RCTPhotoLibraryImageLoader.m
-                                    @"cover": [NSString stringWithFormat:@"ph://%@", coverAsset.localIdentifier] };
+                                    @"cover": [NSString stringWithFormat:@"ph://%@", coverAsset.localIdentifier],
+                                    @"created_date": coverAsset.creationDate};
             [result addObject:album];
         }
     }];
