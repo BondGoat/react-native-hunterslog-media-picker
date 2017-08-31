@@ -3,11 +3,8 @@ package com.falco.mediapicker;
 /**
  * Created by pqthuy on 04/26/2017.
  */
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -15,15 +12,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.falco.mediapicker.R;
-import com.squareup.picasso.LruCache;
-import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.List;
 
@@ -32,16 +24,10 @@ public class ImageAdapter extends BaseAdapter {
     private final List<MediaItem> expandableListDetail;
     public final String TAG = ImageAdapter.this.getClass().getSimpleName();
     public final int deviceW, deviceH, deviceWPx, deviceHPx, imageW;
-    Picasso picassoInstance;
 
     public ImageAdapter(Context context, List<MediaItem> expandableListDetail) {
         this.context = context;
         this.expandableListDetail = expandableListDetail;
-
-        picassoInstance = new Picasso.Builder(context)
-                .memoryCache(new LruCache(2 * 1024 * 1024))
-                .addRequestHandler(new VideoRequestHandler())
-                .build();
 
         DisplayMetrics displaymetrics = Resources.getSystem().getDisplayMetrics();
         deviceWPx = displaymetrics.widthPixels;
@@ -89,21 +75,24 @@ public class ImageAdapter extends BaseAdapter {
 //                        Supported formats are: JPEG, DNG, CR2, NEF, NRW, ARW, RW2, ORF, PEF, SRW and RAF.
                         if (isPhoto) {
                             if (item.RealUrl.toLowerCase().contains("http") || item.RealUrl.toLowerCase().contains("https")) {
-                                picassoInstance.with(context)
+                                Glide.with(context)
                                         .load(Uri.parse(item.RealUrl))
-                                        .resize(imageW, imageW)
+                                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                        .override(imageW, imageW)
                                         .centerCrop()
                                         .into(imgView);
                             } else {
-                                picassoInstance.with(context)
+                                Glide.with(context)
                                         .load(item.RealUrl)
-                                        .resize(imageW, imageW)
+                                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                        .override(imageW, imageW)
                                         .centerCrop()
                                         .into(imgView);
                             }
                         } else {
-                            picassoInstance.load(VideoRequestHandler.SCHEME_VIEDEO + ":" + ((item.RealUrl.toLowerCase().contains("file://")) ? item.RealUrl.replace("file://", "") : item.RealUrl))
-                                    .resize(imageW, imageW)
+                            Glide.with(context)
+                                    .load(item.RealUrl)
+                                    .override(imageW, imageW)
                                     .centerCrop()
                                     .into(imgView);
                         }

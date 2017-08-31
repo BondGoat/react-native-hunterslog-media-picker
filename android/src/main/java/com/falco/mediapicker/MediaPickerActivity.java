@@ -36,9 +36,9 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.gson.Gson;
-import com.squareup.picasso.LruCache;
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -54,7 +54,6 @@ import java.util.List;
 public class MediaPickerActivity extends Activity {
 
     ProgressDialog mProgressDialog;
-    Picasso picassoInstance;
     GridView gridMedia;
     Button btnBack, btnAdd;
     ImageAdapter imageAdapter;
@@ -135,11 +134,6 @@ public class MediaPickerActivity extends Activity {
         deviceHPx = displaymetrics.heightPixels;
         deviceH = (int) Utils.convertPixelsToDp(displaymetrics.heightPixels, getApplicationContext());
         deviceW = (int) Utils.convertPixelsToDp(displaymetrics.widthPixels, getApplicationContext());
-
-        picassoInstance = new Picasso.Builder(getApplicationContext())
-                .memoryCache(new LruCache(2 * 1024 * 1024))
-                .addRequestHandler(new VideoRequestHandler())
-                .build();
 
         gridMedia = (GridView) findViewById(R.id.gridMedia);
         gridMedia.setOnItemClickListener(mediaItemClickListener);
@@ -1064,23 +1058,26 @@ public class MediaPickerActivity extends Activity {
 
                     if (isPhoto) {
                         if (item.RealUrl.toLowerCase().contains("http") || item.RealUrl.toLowerCase().contains("https")) {
-                            picassoInstance.with(getApplicationContext())
+                            Glide.with(getApplicationContext())
                                     .load(Uri.parse(item.RealUrl))
-                                    .resize(100, 100)
+                                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                    .override(100, 100)
                                     .centerCrop()
                                     .into(imgView);
                         } else {
-                            picassoInstance.with(getApplicationContext())
+                            Glide.with(getApplicationContext())
                                     .load(item.RealUrl)
-                                    .resize(100, 100)
+                                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                    .override(100, 100)
                                     .centerCrop()
                                     .into(imgView);
                         }
 
 
                     } else {
-                        picassoInstance.load(VideoRequestHandler.SCHEME_VIEDEO + ":" + ((item.RealUrl.toLowerCase().contains("file://")) ? item.RealUrl.replace("file://", "") : item.RealUrl))
-                                .resize(100, 100)
+                        Glide.with(getApplicationContext())
+                                .load(item.RealUrl)
+                                .override(100, 100)
                                 .centerCrop()
                                 .into(imgView);
                     }

@@ -36,8 +36,6 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
-import com.squareup.picasso.LruCache;
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,7 +51,6 @@ import java.util.List;
 public class SortByDateMediaPickerActivity extends Activity {
     private boolean isScrollEnabled = true;
     ProgressDialog mProgressDialog;
-    Picasso picassoInstance;
     Button btnBack, btnAdd, btnCapture;
     float scale;
     int max_photo = 10, max_video = 1, max_video_duration = 10;
@@ -151,10 +148,6 @@ public class SortByDateMediaPickerActivity extends Activity {
         deviceH = (int) Utils.convertPixelsToDp(displaymetrics.heightPixels, getApplicationContext());
         deviceW = (int) Utils.convertPixelsToDp(displaymetrics.widthPixels, getApplicationContext());
         scale = getResources().getDisplayMetrics().density;
-        picassoInstance = new Picasso.Builder(getApplicationContext())
-                .memoryCache(new LruCache(2 * 1024 * 1024))
-                .addRequestHandler(new VideoRequestHandler())
-                .build();
 
         imageW = deviceWPx/3;
 

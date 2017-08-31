@@ -3,18 +3,10 @@ package com.falco.mediapicker;
 /**
  * Created by pqthuy on 04/24/2017.
  */
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-
 import android.app.Dialog;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,8 +18,13 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.squareup.picasso.LruCache;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
@@ -38,7 +35,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     public final String TAG = CustomExpandableListAdapter.this.getClass().getSimpleName();
     //private final List<MediaItem> expandableListDetail;
     public final int imageW, max_photo, max_video;
-    Picasso picassoInstance;
     Dialog mDialog;
     public CustomExpandableListAdapter(Context context, String expandableListTitle,
                                        HashMap<String, List<MediaItem>> expandableListDetail, int max_photo, int max_video, int imageW) {
@@ -48,11 +44,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         this.max_photo = max_photo;
         this.max_video = max_video;
         this.imageW = imageW;
-
-        picassoInstance = new Picasso.Builder(context)
-                .memoryCache(new LruCache(2 * 1024 * 1024))
-                .addRequestHandler(new VideoRequestHandler())
-                .build();
 
         //Log.v(TAG, "deviceW= " + deviceW + " | deviceH = " + deviceH);
 
@@ -104,8 +95,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
             while(i < 3){
                 if(Constants.STEP < (mediaItemList.size()) && mediaItemList.get(Constants.STEP).RealUrl != null){
                     final MediaItem item = mediaItemList.get(Constants.STEP);
-                    Log.v(TAG, "item.RealUrl: " + item.RealUrl);
-                    Log.v(TAG, "Constants.STEP= " + Constants.STEP);
 
                     View viewItem = layoutInflater.inflate(R.layout.layout_photo, null);
 
@@ -114,17 +103,14 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
                     viewItem.setLayoutParams(layoutParams);
                     boolean isPhoto = isPhoto(item);
+
                     ImageView imgView = (ImageView) viewItem.findViewById(R.id.imgView);
                     imgView.setLayoutParams(layoutParams);
+
                     ImageView imgSelected = (ImageView) viewItem.findViewById(R.id.ic_selected);
-                    imgView.setTag(imgSelected);
-                    final ImageView imgPlay = (ImageView) viewItem.findViewById(R.id.ic_play);
-
                     imgSelected.setVisibility((item.IsChecked) ? View.VISIBLE : View.GONE);
-                    if(item.IsChecked){
-                        Log.v(TAG, "CHECKED PRE_SELECTED ITEM: " + item.RealUrl);
-                    }
 
+                    ImageView imgPlay = (ImageView) viewItem.findViewById(R.id.ic_play);
                     imgPlay.setVisibility((isPhoto) ? View.GONE : View.VISIBLE);
 
                     viewItem.setOnClickListener(new View.OnClickListener() {
@@ -183,7 +169,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                                             item.IsChecked = true;
                                             itemImgSelected.setVisibility(View.VISIBLE);
                                             Constants.SELECTED_MEDIA_ITEM_LIST.add(tmpSelectedMediaItem);
-                                            Log.v(TAG, "ADDED ITEM L2");
                                         }
                                     }
                                 } else if ((Constants.SELECTED_MEDIA_ITEM_LIST.size() == max_photo && Constants.MEDIA_LIST_TYPE == 1 && isPhoto(item)) ||
@@ -225,21 +210,24 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
                     if (isPhoto) {
                         if (item.RealUrl.toLowerCase().contains("http") || item.RealUrl.toLowerCase().contains("https")) {
-                            picassoInstance.with(context)
+                            Glide.with(context)
                                     .load(Uri.parse(item.RealUrl))
-                                    .resize(imageW/3, imageW/3)
+                                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                    .override(imageW/3, imageW/3)
                                     .centerCrop()
                                     .into(imgView);
                         } else {
-                            picassoInstance.with(context)
+                            Glide.with(context)
                                     .load(item.RealUrl)
-                                    .resize(imageW/3, imageW/3)
+                                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                    .override(imageW/3, imageW/3)
                                     .centerCrop()
                                     .into(imgView);
                         }
                     } else {
-                        picassoInstance.load(VideoRequestHandler.SCHEME_VIEDEO + ":" + ((item.RealUrl.toLowerCase().contains("file://")) ? item.RealUrl.replace("file://", "") : item.RealUrl))
-                                .resize(imageW/3, imageW/3)
+                        Glide.with(context)
+                                .load(item.RealUrl)
+                                .override(imageW/3, imageW/3)
                                 .centerCrop()
                                 .into(imgView);
                     }
