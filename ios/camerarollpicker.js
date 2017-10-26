@@ -236,8 +236,8 @@ class CameraRollPicker extends Component {
                 duration: (!_.isEmpty(mMediaList[i].node.duration) ? mMediaList[i].node.duration : 0),
                 realUrl: mMediaList[i].node.image.uri,
                 location: {
-                  latitude: ((mMediaList[i].node.location && mMediaList[i].node.location.latitude > 0) ? mMediaList[i].node.location.latitude : null ),
-                  longitude: ((mMediaList[i].node.location && mMediaList[i].node.location.longitude > 0) ? mMediaList[i].node.location.longitude : null ),
+                  latitude: ((mMediaList[i].node.location && mMediaList[i].node.location.latitude != 0.0) ? mMediaList[i].node.location.latitude : null ),
+                  longitude: ((mMediaList[i].node.location && mMediaList[i].node.location.longitude != 0.0) ? mMediaList[i].node.location.longitude : null ),
                 },
                 isChecked: false,
                 createdAt: mMediaList[i].node.timestamp,
@@ -272,8 +272,8 @@ class CameraRollPicker extends Component {
                 duration: (!_.isEmpty(mMediaList[i].node.duration) ? mMediaList[i].node.duration : 0),
                 realUrl: mMediaList[i].node.image.uri,
                 location: {
-                  latitude: ((mMediaList[i].node.location && mMediaList[i].node.location.latitude > 0) ? mMediaList[i].node.location.latitude : null ),
-                  longitude: ((mMediaList[i].node.location && mMediaList[i].node.location.longitude > 0) ? mMediaList[i].node.location.longitude : null ),
+                  latitude: ((mMediaList[i].node.location && mMediaList[i].node.location.latitude != 0.0) ? mMediaList[i].node.location.latitude : null ),
+                  longitude: ((mMediaList[i].node.location && mMediaList[i].node.location.longitude != 0.0) ? mMediaList[i].node.location.longitude : null ),
                 },
                 isChecked: false,
                 createdAt: mMediaList[i].node.timestamp,
@@ -355,7 +355,6 @@ class CameraRollPicker extends Component {
       mSortByDateMedialist = this.dividedByRowData(newState.images, this.state.selected);
 
       newState.sortedImages = mSortByDateMedialist;
-
 
       newState.dataSource = this.state.dataSource.cloneWithRows(newState.sortedImages);
 
